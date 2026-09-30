@@ -69,17 +69,17 @@ If a source only links to a transcript in a system that isn't connected, record 
 
 Each meeting gets a **Sync ID**: `meeting:<source system>:<source item ID>` (fallback `meeting:<YYYY-MM-DD>:<slugified title>`).
 
-**Finding an existing item:** `search` the workspace with `resourceTypes: ["SOURCE"]` for the Sync ID. The stored content is base64, so confirm each candidate with `getSource`: decode `content` and check its `Sync ID:` line, or check that the `name` ends with the Sync ID for binary files. If search returns nothing, page through `getOwnedSources` and match on `name`.
+**Finding an existing item:** `search` the workspace with `resourceTypes: ["SOURCE"]` for the Sync ID. Confirm with `getSource`: check the `content` field for the `Sync ID:` line (for binary files, check that `name` ends with the Sync ID). If search returns nothing, page through `getOwnedSources` and match on `name`.
 
 If the meeting already exists, skip it. In interactive mode, offer to update it by passing its ORN as `orn` in Step 4.
 
 ## Step 4: Write to Peernotes
 
-**Sources only, never notes or thoughts.** Save every synced item as a Peernotes **source**: a Markdown file uploaded with `saveSource`. Never call `saveThought` or `generateNote` for synced items.
+**Sources only, never notes or thoughts.** Save every synced item as a Peernotes **source** with `saveSource`. Never call `saveThought` or `generateNote` for synced items.
 
-- Build the file as UTF-8 Markdown with the header block below at the top, base64-encode it, and call `saveSource` with `workspaceOrn`, `name` (the title), `content` (base64), `extension: "md"` and `sharedWithWorkspace`.
+- Build the content as UTF-8 Markdown with the header block below at the top, and call `saveSource` with `workspaceOrn`, `name` (the title), `content` (raw UTF-8 Markdown string — **do not base64-encode**), `extension: "md"` and `sharedWithWorkspace`.
 - **Update** an existing item by passing its source ORN as `orn`. This replaces the file in place, so never create a second source for the same Sync ID.
-- **Binary originals** (PDF, DOCX, slides, images): upload the file itself with its own extension. If it can't be downloaded, save it with `url` instead. Put the Sync ID in the `name` as ` · <sync id>` so it can still be found.
+- **Binary originals** (PDF, DOCX, slides, images): these must be base64-encoded. Upload the file itself with its own extension. If it can't be downloaded, save it with `url` instead. Put the Sync ID in the `name` as ` · <sync id>` so it can still be found.
 - **Very long items** (over about 5 MB of Markdown): split into parts named `<title> (Part n of N)`. Each part carries `Sync ID: <sync id>#part<n>`.
 
 One Markdown source per meeting, `name` = `<Meeting title>, <YYYY-MM-DD>`:
