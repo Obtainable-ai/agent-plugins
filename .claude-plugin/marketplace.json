@@ -1,0 +1,19 @@
+{
+  "name": "obtainable",
+  "owner": {
+    "name": "Obtainable",
+    "email": "ayan@obtainable.ai"
+  },
+  "metadata": {
+    "description": "Official Claude plugins from Obtainable."
+  },
+  "plugins": [
+    {
+      "name": "peernotes",
+      "source": "./claude/plugins/peernotes",
+      "description": "Keep a team's Peernotes workspace filled with meeting notes, daily GitHub code summaries and documents, and search or manage Peernotes content from Claude.",
+      "category": "productivity",
+      "homepage": "https://peernotes.io"
+    }
+  ]
+}

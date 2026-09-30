@@ -1,0 +1,27 @@
+{
+  "name": "peernotes",
+  "version": "0.13.0",
+  "description": "The Peernotes plugin for teams: one sync admin keeps the team's Peernotes workspace filled with meeting notes, daily GitHub code summaries and documents from shared drives or Notion, on optional recurring or one-time schedules. Anyone can also use it to search, read and manage Peernotes content.",
+  "author": {
+    "name": "Obtainable",
+    "email": "ayan@obtainable.ai"
+  },
+  "license": "MIT",
+  "keywords": [
+    "admin",
+    "github",
+    "google drive",
+    "knowledge base",
+    "meeting notes",
+    "notes",
+    "notion",
+    "onedrive",
+    "peernotes",
+    "productivity",
+    "scheduled",
+    "search",
+    "sync",
+    "team",
+    "transcripts"
+  ]
+}

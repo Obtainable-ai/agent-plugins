@@ -1,0 +1,69 @@
+{
+  "mcpServers": {
+    "Peernotes": {
+      "type": "http",
+      "url": "https://api.peernotes.io/mcp"
+    },
+    "Slack": {
+      "type": "http",
+      "url": "https://slack.mcp.claude.com/mcp"
+    },
+    "Gmail": {
+      "type": "http",
+      "url": "https://gmail.mcp.claude.com/mcp"
+    },
+    "Google Calendar": {
+      "type": "http",
+      "url": "https://gcal.mcp.claude.com/mcp"
+    },
+    "Microsoft 365": {
+      "type": "http",
+      "url": "https://microsoft365.mcp.claude.com/mcp"
+    },
+    "Notion": {
+      "type": "http",
+      "url": "https://mcp.notion.com/mcp"
+    },
+    "Zoom": {
+      "type": "http",
+      "url": "https://zoom.us/mcp/meeting/streamable"
+    },
+    "Dropbox": {
+      "type": "http",
+      "url": "https://mcp.dropbox.com/mcp"
+    },
+    "Fireflies": {
+      "type": "http",
+      "url": "https://api.fireflies.ai/mcp"
+    },
+    "Otter": {
+      "type": "http",
+      "url": "https://mcp.otter.ai/mcp"
+    },
+    "Fathom": {
+      "type": "http",
+      "url": "https://api.fathom.ai/mcp"
+    },
+    "Gong": {
+      "type": "http",
+      "url": "https://mcp.gong.io/mcp"
+    },
+    "Read.ai": {
+      "type": "http",
+      "url": "https://api.read.ai/mcp"
+    },
+    "Granola": {
+      "type": "http",
+      "url": "https://mcp.granola.ai/mcp"
+    }
+  },
+  "recommendedCategories": [
+    "email",
+    "chat",
+    "calendar",
+    "conversation-intelligence",
+    "software-coding",
+    "documents",
+    "wiki-knowledge-base"
+  ]
+}
