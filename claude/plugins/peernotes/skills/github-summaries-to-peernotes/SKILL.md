@@ -27,15 +27,15 @@ This plugin is run by one **sync admin** on behalf of the team. Unless the user 
 
 Most source connectors are bundled with this plugin (see `CONNECTORS.md`). Match connectors by service and tool names, not by where they came from: a bundled server and a directory connector for the same service are interchangeable, so use whichever is signed in and never ask the user to sign in twice. If a bundled one's tools are missing or fail with an auth error, it isn't signed in yet: in interactive runs, ask the user to sign in to it from Settings → Connectors and check again. If a directory connector is missing: `ListConnectors` (installed but disconnected → reconnect in Settings → Connectors; connected but not enabled → enable it in this chat), otherwise `SearchMcpRegistry` + `SuggestConnectors` (interactive only). In scheduled runs, report which connector is missing and stop.
 
-**In Claude Code** (no `ListConnectors`, `SearchMcpRegistry` or `SuggestConnectors` tools): ask the user to sign in with `/mcp` instead of Settings → Connectors. Bundled Slack, Gmail, Google Calendar, Microsoft 365 and Zoom only work in Claude apps. If they show as failed or their sign-in fails, treat them as unavailable, never ask the user to retry them, and suggest the alternatives in `CONNECTORS.md` → Claude Code.
+**In Claude Code** (no `ListConnectors`, `SearchMcpRegistry` or `SuggestConnectors` tools): ask the user to sign in with `/mcp` instead of Settings → Connectors. All bundled connectors work in Claude Code. If a connector shows as failed, check `CONNECTORS.md` → Claude Code: Google services and Microsoft 365 need a one-time OAuth or Entra setup before `/mcp` sign-in will complete.
 
 - **Peernotes** (required): `listWorkspaces`, `saveSource`, `getSource`, `getOwnedSources`, `search`.
 - **GitHub** (required — connector or `gh` CLI, no OAuth app needed): check for GitHub in this order:
   1. A shell is available and `gh auth status` succeeds → use the `gh` CLI (read-only commands in `references/github-queries.md`). This is the primary path in Claude Code and requires no OAuth app.
   2. GitHub connector tools are present (`list_pull_requests`, `search_pull_requests`, `list_commits`, `list_releases`, `get_pull_request`) → use them.
   - If neither is available: **stop**. In scheduled runs, report and halt. In interactive runs, help the user set up GitHub access and do not proceed to Step 1 until one path succeeds:
-    - For `gh` CLI: tell the user to run `gh auth login` (use `/mcp` in Claude Code). Remind them to include the `repo` scope for private repos: `gh auth login --scopes 'repo'`.
-    - For the GitHub connector (Claude apps): `ListConnectors` → reconnect if installed-but-disconnected; otherwise `SearchMcpRegistry` + `SuggestConnectors` so they can install it from a card.
+    - For `gh` CLI: tell the user to run `gh auth login --scopes 'repo'`.
+    - For the GitHub connector: `ListConnectors` → reconnect if installed-but-disconnected; otherwise `SearchMcpRegistry` + `SuggestConnectors` so they can install it from a card. In Claude Code, use `/mcp` instead.
 
 **Org visibility check:** if the repo list returns only public repos (or far fewer than expected), the GitHub credentials may not have access to the org's private repos. Say so in the report so the admin can grant access (`gh auth login` with the right scopes, or the connector's org access settings). Cloning uses separate credentials, so a repo can be visible to one and not the other; report each gap separately.
 
