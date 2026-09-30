@@ -62,7 +62,6 @@ Every chosen sync needs its source connector connected **and** working before it
      1. Shell available and `gh auth status` succeeds → already set up. Remind the admin to ensure `gh` has private-repo access: `gh auth login --scopes 'repo'` if they haven't granted it. Skip the connector check.
      2. GitHub connector tools present → already set up. Remind the admin to grant the connector access to the org's private repos in GitHub's org settings.
      3. Neither available → tell the admin to run `gh auth login --scopes 'repo'`. Or: `SearchMcpRegistry` + `SuggestConnectors` for the GitHub connector (in Claude apps), or reconnect in Settings → Connectors if already installed.
-   - **Standard directory connectors** (Box): not bundled. Missing or disconnected → reconnect in Settings → Connectors, or `SearchMcpRegistry` + `SuggestConnectors` if not installed.
    - **Not connected**: `SearchMcpRegistry` with the source's name and category keywords, then `SuggestConnectors` with the matching `directoryUuid`s so the admin can install and sign in from the card. Ask the admin to connect it now.
    - **Connected but failing** (for example an "insufficient scope" or auth error on a quick read-only probe like listing one file or one repo): ask the admin to disconnect and reconnect it in Settings → Connectors and approve read access.
    - **Not bundled and not in the registry**: say so plainly and suggest adding a custom connector from Settings → Connectors.

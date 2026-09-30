@@ -19,12 +19,11 @@ For Outlook, search the same subjects and sender domains in the date range. Read
 | Otter, Fireflies, Fathom, tl;dv, Read.ai, Granola | Summary / action items in body; transcript link |
 | Gong | Call brief; link to the call |
 
-## ~~chat (Slack, Microsoft Teams)
+## ~~meeting platform (Zoom, Google Meet, Microsoft Teams, Slack)
 
-- Search messages in the range for `transcript`, `meeting notes`, `recap`, `huddle notes`, and for posts by notetaker bots/apps (Zoom, Fireflies, Otter, Fathom, Read.ai, Slack huddle notes, Teams meeting recap).
-- Check the channel or chat the user names first; otherwise search broadly.
-- Read the full thread; transcripts are often in thread replies, snippets, canvases or attached files.
-- Microsoft Teams meeting chats may include "Recap" posts with transcript links.
+- List meetings or recordings in the range, then fetch the transcript for each (Zoom cloud recording transcripts, Teams meeting transcripts).
+- Google Meet transcripts and Gemini notes are saved as Google Docs in the organizer's Drive ("Meet Recordings" folder); read them via ~~cloud storage.
+- Native platform transcripts are usually the most complete; prefer them when de-duplicating.
 
 ### Slack huddles → canvases
 
@@ -36,18 +35,12 @@ Slack captures huddle notes as **canvases**, not as regular messages. Handle the
 4. **Metadata.** Title: the canvas title (strip the "Huddle notes:" prefix). Date/time: the huddle start time from the canvas or its message. Attendees: the participants listed on the canvas or huddle message. Source link: the canvas permalink.
 5. **Never edit the canvas.** Canvas tools can write; only read.
 
-## ~~meeting platform (Zoom, Google Meet, Microsoft Teams)
-
-- List meetings or recordings in the range, then fetch the transcript for each (Zoom cloud recording transcripts, Teams meeting transcripts).
-- Google Meet transcripts and Gemini notes are saved as Google Docs in the organizer's Drive ("Meet Recordings" folder); read them via ~~cloud storage.
-- Native platform transcripts are usually the most complete; prefer them when de-duplicating.
-
 ## ~~notetaker (Fireflies, Otter, Fathom, Gong, tl;dv, Read.ai, Granola)
 
 - Use the connector's list/search tools for meetings or calls in the range, then fetch each transcript (and summary if offered).
 - Keep speaker names and the vendor's link to the meeting.
 
-## ~~cloud storage (Google Drive, OneDrive, SharePoint, Dropbox, Box)
+## ~~cloud storage (Google Drive, OneDrive, SharePoint, Dropbox)
 
 Search files modified in the range whose name or content matches `transcript`, `meeting notes`, `Notes by Gemini`, or with extensions `.vtt`, `.srt`, `.txt`, `.docx`. Look in "Meet Recordings" (Drive) and "Recordings" (OneDrive/SharePoint) folders. Read file content with the connector's read/download tool.
 

@@ -25,7 +25,7 @@ This plugin is run by one **sync admin** on behalf of the team. Unless the user 
 
 ## Step 0: Check connectors (hard gate)
 
-Most source connectors are bundled with this plugin (see `CONNECTORS.md`). Box is not bundled: it needs an OAuth app registered per host, so use the standard connector from the Claude connector directory. Match connectors by service and tool names, not by where they came from: a bundled server and a directory connector for the same service are interchangeable, so use whichever is signed in and never ask the user to sign in twice. If a bundled one's tools are missing or fail with an auth error, it isn't signed in yet: in interactive runs, ask the user to sign in to it from Settings → Connectors and check again. If a directory connector is missing: `ListConnectors` (installed but disconnected → reconnect in Settings → Connectors; connected but not enabled → enable it in this chat), otherwise `SearchMcpRegistry` + `SuggestConnectors` (interactive only). In scheduled runs, report which connector is missing and stop.
+All source connectors are bundled with this plugin (see `CONNECTORS.md`). Match connectors by service and tool names, not by where they came from: a bundled server and a directory connector for the same service are interchangeable, so use whichever is signed in and never ask the user to sign in twice. If a connector's tools are missing or fail with an auth error, it isn't signed in yet: in interactive runs, ask the user to sign in via Settings → Connectors (or `/mcp` in Claude Code) and check again. If a connector is installed but not enabled in this chat (`ListConnectors` shows `enabledInChat: false`), ask the user to enable it. In scheduled runs, report which connector is missing and stop.
 
 **In Claude Code** (no `ListConnectors`, `SearchMcpRegistry` or `SuggestConnectors` tools): ask the user to sign in with `/mcp` instead of Settings → Connectors. All bundled connectors work in Claude Code. If a connector shows as failed, check `CONNECTORS.md` → Claude Code: Google services (Gmail, Calendar, Drive) and Microsoft 365 need a one-time OAuth or Entra setup before `/mcp` sign-in will complete — ask the user to follow those steps and check again.
 
@@ -36,15 +36,14 @@ Most source connectors are bundled with this plugin (see `CONNECTORS.md`). Box i
 | Category | Examples |
 |----------|----------|
 | ~~email | Gmail, Outlook |
-| ~~chat | Slack (incl. huddle notes saved as canvases), Microsoft Teams |
-| ~~meeting platform | Zoom, Google Meet, Microsoft Teams |
+| ~~meeting platform | Zoom, Google Meet, Microsoft Teams, Slack |
 | ~~notetaker | Fireflies, Otter, Fathom, Gong, tl;dv, Read.ai, Granola |
-| ~~cloud storage | Google Drive, OneDrive, SharePoint, Dropbox, Box |
+| ~~cloud storage | Google Drive, OneDrive, SharePoint, Dropbox |
 | ~~calendar (helper only) | Google Calendar, Outlook Calendar |
 | Uploaded files | .txt, .vtt, .srt, .docx, .pdf, .md attached to the chat (interactive only) |
 
 To check:
-1. Scan the tool list and deferred-tool list; load deferred tools with ToolSearch (keywords: `peernotes`, `gmail`, `outlook`, `slack`, `teams`, `zoom`, `fireflies`, `otter`, `fathom`, `gong`, `drive`, `onedrive`, `dropbox`, `box`). Record which categories are usable.
+1. Scan the tool list and deferred-tool list; load deferred tools with ToolSearch (keywords: `peernotes`, `gmail`, `outlook`, `slack`, `teams`, `zoom`, `fireflies`, `otter`, `fathom`, `gong`, `drive`, `onedrive`, `dropbox`). Record which categories are usable.
 2. If Peernotes is missing, call `ListConnectors` with `["peernotes"]`: installed but not connected → tell the user to connect it in Settings → Connectors; connected but not enabled in chat → tell them to enable it; not installed → `SearchMcpRegistry` then `SuggestConnectors` (interactive only). **Stop** until available.
 3. If the user named a specific source that isn't available, handle it the same way (connector suggestions interactive only) and stop.
 4. If no source is available and no file is attached, offer source connectors via `SearchMcpRegistry` / `SuggestConnectors` (interactive only), mention file upload, and stop.

@@ -33,7 +33,7 @@ Try:
 ## Connectors
 
 - **Bundled:** Peernotes plus the source connectors the syncs use: Slack, Gmail, Google Calendar, Google Drive, Microsoft 365, Notion, Zoom, Dropbox, Fireflies, Otter, Fathom, Gong, Read.ai and Granola. Installing the plugin offers each one. Sign in to Peernotes and to the ones your syncs need; the rest can stay signed out.
-- **Standard connectors:** GitHub and Box come from the Claude connector directory (Settings → Connectors), because they need an OAuth app registered per host. The skills prompt for them.
+- **GitHub:** no connector needed — the `gh` CLI (`gh auth login --scopes 'repo'`) is sufficient. A GitHub connector can be used instead if already installed.
 - **Already connected?** If your org already has any of these services as a standard connector, the skills use that one, so nobody signs in twice.
 - **Claude Code:** sign in with `/mcp`. All bundled connectors work. Google services (Gmail, Calendar, Drive) and Microsoft 365 need a one-time OAuth or Entra setup first — see `CONNECTORS.md` → Claude Code.
 - See `CONNECTORS.md` for endpoints.

@@ -19,10 +19,9 @@ Connect team-level access where possible: a notetaker team workspace or Zoom adm
 | Category | Placeholder | Options |
 |----------|-------------|---------|
 | Email | `~~email` | Gmail, Microsoft Outlook |
-| Chat | `~~chat` | Slack (messages and huddle-notes canvases), Microsoft Teams |
-| Meeting platform | `~~meeting platform` | Zoom, Google Meet, Microsoft Teams |
+| Meeting platform | `~~meeting platform` | Zoom, Google Meet, Microsoft Teams, Slack |
 | AI notetaker | `~~notetaker` | Fireflies, Otter, Fathom, Gong, tl;dv, Read.ai, Granola |
-| Cloud storage | `~~cloud storage` | Google Drive, OneDrive, SharePoint, Dropbox, Box |
+| Cloud storage | `~~cloud storage` | Google Drive, OneDrive, SharePoint, Dropbox |
 | Calendar (optional helper) | `~~calendar` | Google Calendar, Outlook Calendar |
 
 ### GitHub summaries (`github-summaries-to-peernotes`)
@@ -62,8 +61,7 @@ The plugin bundles these servers in `.mcp.json`. Installing the plugin offers ea
 
 All use OAuth sign-in. Gong and Microsoft 365 still need an admin to consent or enable. Google services (Gmail, Calendar, Drive) need an OAuth client from your org's Google Cloud project — see the Claude Code section below. If an organization already has one of these as a standard connector, the skills use that one instead.
 
-**Not bundled, use the standard Claude connectors:**
-- **Box:** used by meeting notes (transcript folders). Needs an OAuth app registered per host.
+**GitHub** does not use a connector: the `gh` CLI (`gh auth login --scopes 'repo'`) is sufficient and is the recommended path. A GitHub connector can be used instead if already installed.
 
 **GitHub** does not need a connector or OAuth app: the `gh` CLI (`gh auth login`) is sufficient and is the recommended path. A GitHub connector can be used instead if already installed.
 
