@@ -1,6 +1,6 @@
 ---
 name: github-summaries-to-peernotes
-description: This skill should be used when the user asks to "copy GitHub code summaries to Peernotes", "summarize today's or this week's code changes into Peernotes", "push a repo digest to Peernotes", "save what shipped in a repo to Peernotes", or when a scheduled "Peernotes · GitHub summaries" task runs, including one-time runs and backfills. Produces one digest source per repository per period. Requires the Peernotes and GitHub connectors.
+description: This skill should be used when the user asks to "copy GitHub code summaries to Peernotes", "summarize today's or this week's code changes into Peernotes", "push a repo digest to Peernotes", "save what shipped in a repo to Peernotes", or when a scheduled "Peernotes · GitHub summaries" task runs, including one-time runs and backfills. Produces one digest source per repository per period. Requires Peernotes; GitHub access via the `gh` CLI (`gh auth login`) or a GitHub connector — no OAuth app needed.
 ---
 
 # GitHub code summaries → Peernotes
@@ -25,16 +25,19 @@ This plugin is run by one **sync admin** on behalf of the team. Unless the user 
 
 ## Step 0: Check connectors (hard gate)
 
-Most source connectors are bundled with this plugin (see `CONNECTORS.md`). GitHub, Google Drive and Box are not: they need an OAuth app registered for the host, so use the standard connectors from the Claude connector directory. Match connectors by service and tool names, not by where they came from: a bundled server and a directory connector for the same service are interchangeable, so use whichever is signed in and never ask the user to sign in twice. If a bundled one's tools are missing or fail with an auth error, it isn't signed in yet: in interactive runs, ask the user to sign in to it from Settings → Connectors and check again. If a directory connector is missing: `ListConnectors` (installed but disconnected → reconnect in Settings → Connectors; connected but not enabled → enable it in this chat), otherwise `SearchMcpRegistry` + `SuggestConnectors` (interactive only). In scheduled runs, report which connector is missing and stop.
+Most source connectors are bundled with this plugin (see `CONNECTORS.md`). Match connectors by service and tool names, not by where they came from: a bundled server and a directory connector for the same service are interchangeable, so use whichever is signed in and never ask the user to sign in twice. If a bundled one's tools are missing or fail with an auth error, it isn't signed in yet: in interactive runs, ask the user to sign in to it from Settings → Connectors and check again. If a directory connector is missing: `ListConnectors` (installed but disconnected → reconnect in Settings → Connectors; connected but not enabled → enable it in this chat), otherwise `SearchMcpRegistry` + `SuggestConnectors` (interactive only). In scheduled runs, report which connector is missing and stop.
 
 **In Claude Code** (no `ListConnectors`, `SearchMcpRegistry` or `SuggestConnectors` tools): ask the user to sign in with `/mcp` instead of Settings → Connectors. Bundled Slack, Gmail, Google Calendar, Microsoft 365 and Zoom only work in Claude apps. If they show as failed or their sign-in fails, treat them as unavailable, never ask the user to retry them, and suggest the alternatives in `CONNECTORS.md` → Claude Code.
 
 - **Peernotes** (required): `listWorkspaces`, `saveSource`, `getSource`, `getOwnedSources`, `search`.
-- **GitHub** (required): tools to list repositories and to list/search pull requests, commits, releases and issues (base names like `list_pull_requests`, `search_pull_requests`, `list_commits`, `list_releases`, `get_pull_request`).
+- **GitHub** (required — connector or `gh` CLI, no OAuth app needed): check for GitHub in this order:
+  1. A shell is available and `gh auth status` succeeds → use the `gh` CLI (read-only commands in `references/github-queries.md`). This is the primary path in Claude Code and requires no OAuth app.
+  2. GitHub connector tools are present (`list_pull_requests`, `search_pull_requests`, `list_commits`, `list_releases`, `get_pull_request`) → use them.
+  - If neither is available: **stop**. In scheduled runs, report and halt. In interactive runs, help the user set up GitHub access and do not proceed to Step 1 until one path succeeds:
+    - For `gh` CLI: tell the user to run `gh auth login` (use `/mcp` in Claude Code). Remind them to include the `repo` scope for private repos: `gh auth login --scopes 'repo'`.
+    - For the GitHub connector (Claude apps): `ListConnectors` → reconnect if installed-but-disconnected; otherwise `SearchMcpRegistry` + `SuggestConnectors` so they can install it from a card.
 
-If there are no GitHub tools but a shell is available and `gh auth status` succeeds, use the `gh` CLI in their place (read-only commands in `references/github-queries.md`); this is the usual setup in Claude Code. Otherwise, if either is missing: `ListConnectors` → tell the user to connect or enable it, or `SearchMcpRegistry` + `SuggestConnectors` if not installed (interactive only). **Stop** until both are available.
-
-**Org visibility check:** if a search of the org returns only public repos (or far fewer than expected), the GitHub connector likely hasn't been granted access to the org's private repos. Say so in the report so the admin can grant access in the org's GitHub settings. Cloning uses separate credentials from the connector, so a repo can be visible to one and not the other; report each gap separately.
+**Org visibility check:** if the repo list returns only public repos (or far fewer than expected), the GitHub credentials may not have access to the org's private repos. Say so in the report so the admin can grant access (`gh auth login` with the right scopes, or the connector's org access settings). Cloning uses separate credentials, so a repo can be visible to one and not the other; report each gap separately.
 
 **Local shell:** Step 2a needs a shell with `git` and HTTPS access to github.com. If there is none, skip 2a for every repo and say so in the report.
 
@@ -48,7 +51,7 @@ Ask once for anything not stated:
 
 ## Step 2: Gather activity per repo
 
-Build each digest from two sources: a **local clone** for what the code actually did, and the **GitHub connector** for the conversation around it.
+Build each digest from two sources: a **local clone** for what the code actually did, and **GitHub** (via connector or `gh` CLI) for the conversation around it.
 
 ### 2a. Code changes from a local clone
 
@@ -59,11 +62,11 @@ For each repo, clone into a temporary directory in the working directory and dif
 - **Read hunks selectively**: open the diff of the files that matter most (largest non-generated changes, new modules, changed public interfaces, migrations, config, auth/security paths) to explain *what the code now does*. Stay within the read limits in the reference.
 - **Delete the clone** when the repo is done.
 
-If the clone fails (auth, not found, network, timeout), keep going with the connector for that repo only (2b plus `list_commits`/PR file stats as in `references/github-queries.md`), and note `code diff unavailable: <reason>` in the report and in the digest's Stats line.
+If the clone fails (auth, not found, network, timeout), keep going with Step 2b only for that repo (using `gh` CLI or connector queries from `references/github-queries.md`), and note `code diff unavailable: <reason>` in the report and in the digest's Stats line.
 
-### 2b. Context from the GitHub connector
+### 2b. Context from GitHub (connector or `gh` CLI)
 
-Within the period (queries in `references/github-queries.md`):
+Within the period (queries in `references/github-queries.md`; use `gh` CLI commands when running via CLI, connector tools otherwise):
 - **Merged PRs**: title, number, author, merged date, labels, reviews/approvals, body summary, linked issues. Match them to commits from 2a by PR number or merge SHA.
 - **Direct commits**: commits from 2a on the default branch that match no merged PR (group trivial ones).
 - **Releases/tags** published.
@@ -78,7 +81,7 @@ Sync ID: `github:<owner>/<repo>:<period start YYYY-MM-DD>..<period end YYYY-MM-D
 
 **Finding an existing item:** `search` the workspace with `resourceTypes: ["SOURCE"]` for the Sync ID. The stored content is base64, so confirm each candidate with `getSource`: decode `content` and check its `Sync ID:` line, or check that the `name` ends with the Sync ID for binary files. If search returns nothing, page through `getOwnedSources` and match on `name`.
 
-If the digest exists, skip it. In interactive mode, offer to refresh it by passing its ORN as `orn`.
+If the digest exists, skip it. In interactive mode, offer to refresh it: if the user confirms, record the existing source's ORN and proceed to Step 4 passing that ORN to update the source in place rather than create a new one.
 
 ## Step 4: Write to Peernotes
 

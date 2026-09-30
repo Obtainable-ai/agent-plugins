@@ -45,9 +45,9 @@ Most source connectors are bundled with this plugin (see `CONNECTORS.md`). GitHu
 
 To check:
 1. Scan the tool list and deferred-tool list; load deferred tools with ToolSearch (keywords: `peernotes`, `gmail`, `outlook`, `slack`, `teams`, `zoom`, `fireflies`, `otter`, `fathom`, `gong`, `drive`, `onedrive`, `dropbox`, `box`). Record which categories are usable.
-2. If Peernotes is missing, call `ListConnectors` with `["peernotes"]`: installed but not connected → tell the user to connect it in Settings → Connectors; connected but not enabled in chat → tell them to enable it; not installed → `SearchMcpRegistry` then `SuggestConnectors`. **Stop** until available.
-3. If the user named a specific source that isn't available, handle it the same way and stop.
-4. If no source is available and no file is attached, offer source connectors via `SearchMcpRegistry` / `SuggestConnectors`, mention file upload, and stop.
+2. If Peernotes is missing, call `ListConnectors` with `["peernotes"]`: installed but not connected → tell the user to connect it in Settings → Connectors; connected but not enabled in chat → tell them to enable it; not installed → `SearchMcpRegistry` then `SuggestConnectors` (interactive only). **Stop** until available.
+3. If the user named a specific source that isn't available, handle it the same way (connector suggestions interactive only) and stop.
+4. If no source is available and no file is attached, offer source connectors via `SearchMcpRegistry` / `SuggestConnectors` (interactive only), mention file upload, and stop.
 
 Never fall back to browser automation or scraping unless the user explicitly asks.
 
