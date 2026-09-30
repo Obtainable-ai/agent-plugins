@@ -27,15 +27,15 @@ This plugin is run by one **sync admin** on behalf of the team. Unless the user 
 
 Most source connectors are bundled with this plugin (see `CONNECTORS.md`). Match connectors by service and tool names, not by where they came from: a bundled server and a directory connector for the same service are interchangeable, so use whichever is signed in and never ask the user to sign in twice. If a bundled one's tools are missing or fail with an auth error, it isn't signed in yet: in interactive runs, ask the user to sign in to it from Settings → Connectors and check again. If a directory connector is missing: `ListConnectors` (installed but disconnected → reconnect in Settings → Connectors; connected but not enabled → enable it in this chat), otherwise `SearchMcpRegistry` + `SuggestConnectors` (interactive only). In scheduled runs, report which connector is missing and stop.
 
-**In Claude Code** (no `ListConnectors`, `SearchMcpRegistry` or `SuggestConnectors` tools): ask the user to sign in with `/mcp` instead of Settings → Connectors. Bundled Slack, Gmail, Google Calendar, Microsoft 365 and Zoom only work in Claude apps. If they show as failed or their sign-in fails, treat them as unavailable, never ask the user to retry them, and suggest the alternatives in `CONNECTORS.md` → Claude Code.
+**In Claude Code** (no `ListConnectors`, `SearchMcpRegistry` or `SuggestConnectors` tools): ask the user to sign in with `/mcp` instead of Settings → Connectors. All bundled connectors work in Claude Code. If a connector shows as failed, check `CONNECTORS.md` → Claude Code: Google services and Microsoft 365 need a one-time OAuth or Entra setup before `/mcp` sign-in will complete.
 
 - **Peernotes** (required): `listWorkspaces`, `saveSource`, `getSource`, `getOwnedSources`, `search`.
 - **GitHub** (required — connector or `gh` CLI, no OAuth app needed): check for GitHub in this order:
   1. A shell is available and `gh auth status` succeeds → use the `gh` CLI (read-only commands in `references/github-queries.md`). This is the primary path in Claude Code and requires no OAuth app.
   2. GitHub connector tools are present (`list_pull_requests`, `search_pull_requests`, `list_commits`, `list_releases`, `get_pull_request`) → use them.
   - If neither is available: **stop**. In scheduled runs, report and halt. In interactive runs, help the user set up GitHub access and do not proceed to Step 1 until one path succeeds:
-    - For `gh` CLI: tell the user to run `gh auth login` (use `/mcp` in Claude Code). Remind them to include the `repo` scope for private repos: `gh auth login --scopes 'repo'`.
-    - For the GitHub connector (Claude apps): `ListConnectors` → reconnect if installed-but-disconnected; otherwise `SearchMcpRegistry` + `SuggestConnectors` so they can install it from a card.
+    - For `gh` CLI: tell the user to run `gh auth login --scopes 'repo'`.
+    - For the GitHub connector: `ListConnectors` → reconnect if installed-but-disconnected; otherwise `SearchMcpRegistry` + `SuggestConnectors` so they can install it from a card. In Claude Code, use `/mcp` instead.
 
 **Org visibility check:** if the repo list returns only public repos (or far fewer than expected), the GitHub credentials may not have access to the org's private repos. Say so in the report so the admin can grant access (`gh auth login` with the right scopes, or the connector's org access settings). Cloning uses separate credentials, so a repo can be visible to one and not the other; report each gap separately.
 
@@ -79,17 +79,17 @@ Skip repos with no activity in either source. Write the digest from the real dif
 
 Sync ID: `github:<owner>/<repo>:<period start YYYY-MM-DD>..<period end YYYY-MM-DD>` (for a single-day period, start and end are the same date).
 
-**Finding an existing item:** `search` the workspace with `resourceTypes: ["SOURCE"]` for the Sync ID. The stored content is base64, so confirm each candidate with `getSource`: decode `content` and check its `Sync ID:` line, or check that the `name` ends with the Sync ID for binary files. If search returns nothing, page through `getOwnedSources` and match on `name`.
+**Finding an existing item:** `search` the workspace with `resourceTypes: ["SOURCE"]` for the Sync ID. Confirm with `getSource`: check the `content` field for the `Sync ID:` line (for binary files, check that `name` ends with the Sync ID). If search returns nothing, page through `getOwnedSources` and match on `name`.
 
 If the digest exists, skip it. In interactive mode, offer to refresh it: if the user confirms, record the existing source's ORN and proceed to Step 4 passing that ORN to update the source in place rather than create a new one.
 
 ## Step 4: Write to Peernotes
 
-**Sources only, never notes or thoughts.** Save every synced item as a Peernotes **source**: a Markdown file uploaded with `saveSource`. Never call `saveThought` or `generateNote` for synced items.
+**Sources only, never notes or thoughts.** Save every synced item as a Peernotes **source** with `saveSource`. Never call `saveThought` or `generateNote` for synced items.
 
-- Build the file as UTF-8 Markdown with the header block below at the top, base64-encode it, and call `saveSource` with `workspaceOrn`, `name` (the title), `content` (base64), `extension: "md"` and `sharedWithWorkspace`.
+- Build the content as UTF-8 Markdown with the header block below at the top, and call `saveSource` with `workspaceOrn`, `name` (the title), `content` (raw UTF-8 Markdown string — **do not base64-encode**), `extension: "md"` and `sharedWithWorkspace`.
 - **Update** an existing item by passing its source ORN as `orn`. This replaces the file in place, so never create a second source for the same Sync ID.
-- **Binary originals** (PDF, DOCX, slides, images): upload the file itself with its own extension. If it can't be downloaded, save it with `url` instead. Put the Sync ID in the `name` as ` · <sync id>` so it can still be found.
+- **Binary originals** (PDF, DOCX, slides, images): these must be base64-encoded. Upload the file itself with its own extension. If it can't be downloaded, save it with `url` instead. Put the Sync ID in the `name` as ` · <sync id>` so it can still be found.
 - **Very long items** (over about 5 MB of Markdown): split into parts named `<title> (Part n of N)`. Each part carries `Sync ID: <sync id>#part<n>`.
 
 One Markdown source per repo, `name` = `<repo>: <start> – <end>`. Write the digest yourself from the gathered data, using only that data:

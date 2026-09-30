@@ -19,10 +19,9 @@ Connect team-level access where possible: a notetaker team workspace or Zoom adm
 | Category | Placeholder | Options |
 |----------|-------------|---------|
 | Email | `~~email` | Gmail, Microsoft Outlook |
-| Chat | `~~chat` | Slack (messages and huddle-notes canvases), Microsoft Teams |
-| Meeting platform | `~~meeting platform` | Zoom, Google Meet, Microsoft Teams |
+| Meeting platform | `~~meeting platform` | Zoom, Google Meet, Microsoft Teams, Slack |
 | AI notetaker | `~~notetaker` | Fireflies, Otter, Fathom, Gong, tl;dv, Read.ai, Granola |
-| Cloud storage | `~~cloud storage` | Google Drive, OneDrive, SharePoint, Dropbox, Box |
+| Cloud storage | `~~cloud storage` | Google Drive, OneDrive, SharePoint, Dropbox |
 | Calendar (optional helper) | `~~calendar` | Google Calendar, Outlook Calendar |
 
 ### GitHub summaries (`github-summaries-to-peernotes`)
@@ -45,10 +44,11 @@ The plugin bundles these servers in `.mcp.json`. Installing the plugin offers ea
 | Connector | Endpoint | Used by |
 |-----------|----------|---------|
 | Peernotes | `https://api.peernotes.io/mcp` | All skills (required) |
-| Slack | `https://slack.mcp.claude.com/mcp` | Meeting notes (huddle canvases, recaps) |
-| Gmail | `https://gmail.mcp.claude.com/mcp` | Meeting notes (recap emails) |
-| Google Calendar | `https://gcal.mcp.claude.com/mcp` | Meeting notes (helper) |
-| Microsoft 365 | `https://microsoft365.mcp.claude.com/mcp` | Meeting notes (Outlook, Teams); Document sync (OneDrive, SharePoint). Needs a one-time Entra admin consent |
+| Slack | `https://mcp.slack.com/mcp` | Meeting notes (huddle canvases, recaps) |
+| Gmail | `https://gmailmcp.googleapis.com/mcp/v1` | Meeting notes (recap emails). Needs a Google Cloud OAuth client — see Claude Code below |
+| Google Calendar | `https://calendarmcp.googleapis.com/mcp/v1` | Meeting notes (helper). Same OAuth client as Gmail |
+| Google Drive | `https://drivemcp.googleapis.com/mcp/v1` | Meeting notes (shared transcript folders); Document sync. Same OAuth client |
+| Microsoft 365 | `https://mcp.microsoft365.com/mcp` | Meeting notes (Outlook, Teams); Document sync (OneDrive, SharePoint). Needs a one-time Entra admin consent |
 | Notion | `https://mcp.notion.com/mcp` | Document sync |
 | Zoom | `https://zoom.us/mcp/meeting/streamable` | Meeting notes |
 | Dropbox | `https://mcp.dropbox.com/mcp` | Meeting notes (transcript folders) |
@@ -59,11 +59,9 @@ The plugin bundles these servers in `.mcp.json`. Installing the plugin offers ea
 | Read.ai | `https://api.read.ai/mcp` | Meeting notes (beta) |
 | Granola | `https://mcp.granola.ai/mcp` | Meeting notes |
 
-All use OAuth sign-in with no per-organization app setup (Microsoft 365 and Gong still need an admin to consent or enable). If an organization already has one of these as a standard connector, the skills use that one instead.
+All use OAuth sign-in. Gong and Microsoft 365 still need an admin to consent or enable. Google services (Gmail, Calendar, Drive) need an OAuth client from your org's Google Cloud project — see the Claude Code section below. If an organization already has one of these as a standard connector, the skills use that one instead.
 
-**Not bundled, use the standard Claude connectors:** these servers need an OAuth app registered for each host or organization, so a plugin can't ship a working sign-in for them. The Claude connector directory already has them, and the skills show a connect card when they're missing.
-- **Google Drive:** used by meeting notes (shared transcript folders) and document sync.
-- **Box:** used by meeting notes (transcript folders).
+**GitHub** does not use a connector: the `gh` CLI (`gh auth login --scopes 'repo'`) is sufficient and is the recommended path. A GitHub connector can be used instead if already installed.
 
 **GitHub** does not need a connector or OAuth app: the `gh` CLI (`gh auth login`) is sufficient and is the recommended path. A GitHub connector can be used instead if already installed.
 
@@ -73,18 +71,30 @@ All use OAuth sign-in with no per-organization app setup (Microsoft 365 and Gong
 
 ## Claude Code
 
-Claude Code (the CLI, IDE extensions and the desktop app's Code tab) loads the same plugin, with a few differences:
+Claude Code (the CLI, IDE extensions and the desktop app's Code tab) loads the same plugin. All bundled connectors work; sign in with `/mcp`. Settings → Connectors and connect cards aren't available, and claude.ai connectors don't carry over.
 
-- **Sign-in:** run `/mcp` to sign in to the bundled servers. Settings → Connectors and connect cards aren't available, and claude.ai connectors don't carry over.
-- **Bundled servers that only work in Claude apps:** Slack, Gmail, Google Calendar and Microsoft 365 are hosted on `*.mcp.claude.com`, and the Zoom entry relies on the app's own Zoom sign-in. In Claude Code these show as failed or can't finish sign-in. That's expected, so leave them signed out and use the alternatives below.
-- **Everything else bundled** (Peernotes, Notion, Dropbox, Fireflies, Otter, Fathom, Gong, Read.ai, Granola) signs in through `/mcp` as usual.
+Most connectors sign in with `/mcp` and no extra setup. A few need one-time configuration first:
 
-| Need | Claude Code alternative |
-|------|-------------------------|
-| Slack | Install Slack's official plugin: `claude plugin install slack@claude-plugins-official`, then `/mcp` to sign in. The workspace admin may need to approve the Slack MCP integration first |
-| GitHub | The local `gh` CLI (`gh auth login`), which also covers private repos. Or the `github@claude-plugins-official` plugin with a personal access token in `GITHUB_PERSONAL_ACCESS_TOKEN` |
-| Gmail, Google Calendar, Google Drive | Google's MCP servers (`https://gmailmcp.googleapis.com/mcp/v1`, `https://calendarmcp.googleapis.com/mcp/v1`, `https://drivemcp.googleapis.com/mcp/v1`) need an OAuth client from the organization's own Google Cloud project: `claude mcp add --transport http --client-id <id> --client-secret gmail <url>`. Otherwise use a notetaker or Dropbox for transcripts, and Notion for documents |
-| Zoom, Microsoft 365 (Outlook, Teams, OneDrive, SharePoint) | No public server that works without per-organization app registration. Use a notetaker (Fireflies, Otter, Fathom, Gong, Read.ai, Granola) that records these meetings |
+**Google services (Gmail, Google Calendar, Google Drive)** — these use Google's own MCP servers and require an OAuth client from your org's Google Cloud project before the `/mcp` sign-in will complete:
+
+```sh
+# Create an OAuth 2.0 client in Google Cloud Console (Desktop app type), then:
+claude mcp add --transport http --client-id <client-id> --client-secret <client-secret> Gmail https://gmailmcp.googleapis.com/mcp/v1
+claude mcp add --transport http --client-id <client-id> --client-secret <client-secret> "Google Calendar" https://calendarmcp.googleapis.com/mcp/v1
+claude mcp add --transport http --client-id <client-id> --client-secret <client-secret> "Google Drive" https://drivemcp.googleapis.com/mcp/v1
+```
+
+Then run `/mcp` to complete sign-in. All three can share the same OAuth client if you add the three scopes (`gmail.readonly`, `calendar.readonly`, `drive.readonly`) to it.
+
+**Microsoft 365 (Outlook, Teams, OneDrive, SharePoint)** — needs a one-time Entra admin consent for the MCP app in your organization's tenant, then sign in with `/mcp` as usual.
+
+**GitHub** — no connector or OAuth app needed: the local `gh` CLI is the recommended path:
+
+```sh
+gh auth login --scopes 'repo'
+```
+
+Or use `GITHUB_PERSONAL_ACCESS_TOKEN` if you prefer the connector.
 
 ## Scheduling
 

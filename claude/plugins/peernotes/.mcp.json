@@ -6,19 +6,23 @@
     },
     "Slack": {
       "type": "http",
-      "url": "https://slack.mcp.claude.com/mcp"
+      "url": "https://mcp.slack.com/mcp"
     },
     "Gmail": {
       "type": "http",
-      "url": "https://gmail.mcp.claude.com/mcp"
+      "url": "https://gmailmcp.googleapis.com/mcp/v1"
     },
     "Google Calendar": {
       "type": "http",
-      "url": "https://gcal.mcp.claude.com/mcp"
+      "url": "https://calendarmcp.googleapis.com/mcp/v1"
+    },
+    "Google Drive": {
+      "type": "http",
+      "url": "https://drivemcp.googleapis.com/mcp/v1"
     },
     "Microsoft 365": {
       "type": "http",
-      "url": "https://microsoft365.mcp.claude.com/mcp"
+      "url": "https://mcp.microsoft365.com/mcp"
     },
     "Notion": {
       "type": "http",

@@ -25,9 +25,9 @@ This plugin is run by one **sync admin** on behalf of the team. Unless the user 
 
 ## Step 0: Check connectors (hard gate)
 
-Most source connectors are bundled with this plugin (see `CONNECTORS.md`). GitHub, Google Drive and Box are not: they need an OAuth app registered for the host, so use the standard connectors from the Claude connector directory. Match connectors by service and tool names, not by where they came from: a bundled server and a directory connector for the same service are interchangeable, so use whichever is signed in and never ask the user to sign in twice. If a bundled one's tools are missing or fail with an auth error, it isn't signed in yet: in interactive runs, ask the user to sign in to it from Settings → Connectors and check again. If a directory connector is missing: `ListConnectors` (installed but disconnected → reconnect in Settings → Connectors; connected but not enabled → enable it in this chat), otherwise `SearchMcpRegistry` + `SuggestConnectors` (interactive only). In scheduled runs, report which connector is missing and stop.
+All source connectors are bundled with this plugin (see `CONNECTORS.md`). Match connectors by service and tool names, not by where they came from: a bundled server and a directory connector for the same service are interchangeable, so use whichever is signed in and never ask the user to sign in twice. If a connector's tools are missing or fail with an auth error, it isn't signed in yet: in interactive runs, ask the user to sign in via Settings → Connectors (or `/mcp` in Claude Code) and check again. If a connector is installed but not enabled in this chat (`ListConnectors` shows `enabledInChat: false`), ask the user to enable it. In scheduled runs, report which connector is missing and stop.
 
-**In Claude Code** (no `ListConnectors`, `SearchMcpRegistry` or `SuggestConnectors` tools): ask the user to sign in with `/mcp` instead of Settings → Connectors. Bundled Slack, Gmail, Google Calendar, Microsoft 365 and Zoom only work in Claude apps. If they show as failed or their sign-in fails, treat them as unavailable, never ask the user to retry them, and suggest the alternatives in `CONNECTORS.md` → Claude Code.
+**In Claude Code** (no `ListConnectors`, `SearchMcpRegistry` or `SuggestConnectors` tools): ask the user to sign in with `/mcp` instead of Settings → Connectors. All bundled connectors work in Claude Code. If a connector shows as failed, check `CONNECTORS.md` → Claude Code: Google services (Gmail, Calendar, Drive) and Microsoft 365 need a one-time OAuth or Entra setup before `/mcp` sign-in will complete — ask the user to follow those steps and check again.
 
 **Destination (required):** Peernotes, with at least `listWorkspaces`, `saveSource`, `getSource`, `getOwnedSources` and `search`.
 
@@ -36,15 +36,14 @@ Most source connectors are bundled with this plugin (see `CONNECTORS.md`). GitHu
 | Category | Examples |
 |----------|----------|
 | ~~email | Gmail, Outlook |
-| ~~chat | Slack (incl. huddle notes saved as canvases), Microsoft Teams |
-| ~~meeting platform | Zoom, Google Meet, Microsoft Teams |
+| ~~meeting platform | Zoom, Google Meet, Microsoft Teams, Slack |
 | ~~notetaker | Fireflies, Otter, Fathom, Gong, tl;dv, Read.ai, Granola |
-| ~~cloud storage | Google Drive, OneDrive, SharePoint, Dropbox, Box |
+| ~~cloud storage | Google Drive, OneDrive, SharePoint, Dropbox |
 | ~~calendar (helper only) | Google Calendar, Outlook Calendar |
 | Uploaded files | .txt, .vtt, .srt, .docx, .pdf, .md attached to the chat (interactive only) |
 
 To check:
-1. Scan the tool list and deferred-tool list; load deferred tools with ToolSearch (keywords: `peernotes`, `gmail`, `outlook`, `slack`, `teams`, `zoom`, `fireflies`, `otter`, `fathom`, `gong`, `drive`, `onedrive`, `dropbox`, `box`). Record which categories are usable.
+1. Scan the tool list and deferred-tool list; load deferred tools with ToolSearch (keywords: `peernotes`, `gmail`, `outlook`, `slack`, `teams`, `zoom`, `fireflies`, `otter`, `fathom`, `gong`, `drive`, `onedrive`, `dropbox`). Record which categories are usable.
 2. If Peernotes is missing, call `ListConnectors` with `["peernotes"]`: installed but not connected → tell the user to connect it in Settings → Connectors; connected but not enabled in chat → tell them to enable it; not installed → `SearchMcpRegistry` then `SuggestConnectors` (interactive only). **Stop** until available.
 3. If the user named a specific source that isn't available, handle it the same way (connector suggestions interactive only) and stop.
 4. If no source is available and no file is attached, offer source connectors via `SearchMcpRegistry` / `SuggestConnectors` (interactive only), mention file upload, and stop.
@@ -69,17 +68,17 @@ If a source only links to a transcript in a system that isn't connected, record 
 
 Each meeting gets a **Sync ID**: `meeting:<source system>:<source item ID>` (fallback `meeting:<YYYY-MM-DD>:<slugified title>`).
 
-**Finding an existing item:** `search` the workspace with `resourceTypes: ["SOURCE"]` for the Sync ID. The stored content is base64, so confirm each candidate with `getSource`: decode `content` and check its `Sync ID:` line, or check that the `name` ends with the Sync ID for binary files. If search returns nothing, page through `getOwnedSources` and match on `name`.
+**Finding an existing item:** `search` the workspace with `resourceTypes: ["SOURCE"]` for the Sync ID. Confirm with `getSource`: check the `content` field for the `Sync ID:` line (for binary files, check that `name` ends with the Sync ID). If search returns nothing, page through `getOwnedSources` and match on `name`.
 
 If the meeting already exists, skip it. In interactive mode, offer to update it by passing its ORN as `orn` in Step 4.
 
 ## Step 4: Write to Peernotes
 
-**Sources only, never notes or thoughts.** Save every synced item as a Peernotes **source**: a Markdown file uploaded with `saveSource`. Never call `saveThought` or `generateNote` for synced items.
+**Sources only, never notes or thoughts.** Save every synced item as a Peernotes **source** with `saveSource`. Never call `saveThought` or `generateNote` for synced items.
 
-- Build the file as UTF-8 Markdown with the header block below at the top, base64-encode it, and call `saveSource` with `workspaceOrn`, `name` (the title), `content` (base64), `extension: "md"` and `sharedWithWorkspace`.
+- Build the content as UTF-8 Markdown with the header block below at the top, and call `saveSource` with `workspaceOrn`, `name` (the title), `content` (raw UTF-8 Markdown string — **do not base64-encode**), `extension: "md"` and `sharedWithWorkspace`.
 - **Update** an existing item by passing its source ORN as `orn`. This replaces the file in place, so never create a second source for the same Sync ID.
-- **Binary originals** (PDF, DOCX, slides, images): upload the file itself with its own extension. If it can't be downloaded, save it with `url` instead. Put the Sync ID in the `name` as ` · <sync id>` so it can still be found.
+- **Binary originals** (PDF, DOCX, slides, images): these must be base64-encoded. Upload the file itself with its own extension. If it can't be downloaded, save it with `url` instead. Put the Sync ID in the `name` as ` · <sync id>` so it can still be found.
 - **Very long items** (over about 5 MB of Markdown): split into parts named `<title> (Part n of N)`. Each part carries `Sync ID: <sync id>#part<n>`.
 
 One Markdown source per meeting, `name` = `<Meeting title>, <YYYY-MM-DD>`:

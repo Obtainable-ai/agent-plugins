@@ -56,17 +56,16 @@ Every chosen sync needs its source connector connected **and** working before it
 
 1. `ListConnectors` and check each chosen sync's source: GitHub for GitHub summaries; Google Drive / SharePoint / OneDrive / Notion for documents; at least one transcript source for meeting notes (notetaker, Zoom, Slack, Gmail/Outlook, Google Calendar, shared Drive folder). See `references/team-sources.md`.
 2. For each missing or unusable source:
-   - **Bundled with this plugin but not signed in** (Slack, Gmail, Google Calendar, Microsoft 365, Notion, Zoom, Dropbox, Fireflies, Otter, Fathom, Gong, Read.ai, Granola; see `CONNECTORS.md`): its tools are missing or return an auth error. Ask the admin to sign in to it from the plugin's connectors in Settings → Connectors (or Customize → the Peernotes plugin), then check again.
+   - **Bundled with this plugin but not signed in** (Slack, Gmail, Google Calendar, Google Drive, Microsoft 365, Notion, Zoom, Dropbox, Fireflies, Otter, Fathom, Gong, Read.ai, Granola; see `CONNECTORS.md`): its tools are missing or return an auth error. Ask the admin to sign in to it from the plugin's connectors in Settings → Connectors (or Customize → the Peernotes plugin, or `/mcp` in Claude Code), then check again.
    - **Installed but off in this chat** (`connected: true`, `enabledInChat: false`): ask the admin to turn it on in this chat's connector settings.
    - **GitHub** (for GitHub summaries — no OAuth app required): check in this order:
      1. Shell available and `gh auth status` succeeds → already set up. Remind the admin to ensure `gh` has private-repo access: `gh auth login --scopes 'repo'` if they haven't granted it. Skip the connector check.
      2. GitHub connector tools present → already set up. Remind the admin to grant the connector access to the org's private repos in GitHub's org settings.
-     3. Neither available → in Claude Code: tell the admin to run `gh auth login --scopes 'repo'`. In Claude apps: `SearchMcpRegistry` + `SuggestConnectors` for the GitHub connector, or reconnect in Settings → Connectors if already installed.
-   - **Standard directory connectors** (Google Drive, Box): not bundled. Missing or disconnected → reconnect in Settings → Connectors, or `SearchMcpRegistry` + `SuggestConnectors` if not installed.
+     3. Neither available → tell the admin to run `gh auth login --scopes 'repo'`. Or: `SearchMcpRegistry` + `SuggestConnectors` for the GitHub connector (in Claude apps), or reconnect in Settings → Connectors if already installed.
    - **Not connected**: `SearchMcpRegistry` with the source's name and category keywords, then `SuggestConnectors` with the matching `directoryUuid`s so the admin can install and sign in from the card. Ask the admin to connect it now.
    - **Connected but failing** (for example an "insufficient scope" or auth error on a quick read-only probe like listing one file or one repo): ask the admin to disconnect and reconnect it in Settings → Connectors and approve read access.
    - **Not bundled and not in the registry**: say so plainly and suggest adding a custom connector from Settings → Connectors.
-   - **In Claude Code**: sign-in is `/mcp`, not Settings → Connectors, and there are no connect cards. Bundled Slack, Gmail, Google Calendar, Microsoft 365 and Zoom don't work there. Offer the alternatives in `CONNECTORS.md` → Claude Code, such as the `gh` CLI for GitHub, Slack's official plugin, or a notetaker for meetings.
+   - **In Claude Code**: sign-in is `/mcp`, not Settings → Connectors, and there are no connect cards. All bundled connectors work in Claude Code. If Google services (Gmail, Calendar, Drive) or Microsoft 365 show as failed, the admin needs to complete the one-time OAuth or Entra setup first — see `CONNECTORS.md` → Claude Code.
 3. After suggesting, ask with AskUserQuestion: "Connected — check again" / "Schedule anyway (runs fail until connected)" / "Skip this sync". On "check again", reload tools (`ToolSearch`) and re-probe. Only create a task for a source that still isn't working if the admin picks "Schedule anyway", and repeat that warning in Step 5.
 4. For Run now, stop that sync until its source works.
 
