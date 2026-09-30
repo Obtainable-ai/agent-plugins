@@ -29,7 +29,7 @@ Connect team-level access where possible: a notetaker team workspace or Zoom adm
 
 | Category | Options |
 |----------|---------|
-| Source control | GitHub (required for this sync) |
+| Source control | `gh` CLI (`gh auth login`, no OAuth app needed) or GitHub connector |
 
 ### Document sync (`docs-to-peernotes`), at least one source
 
@@ -62,9 +62,10 @@ The plugin bundles these servers in `.mcp.json`. Installing the plugin offers ea
 All use OAuth sign-in with no per-organization app setup (Microsoft 365 and Gong still need an admin to consent or enable). If an organization already has one of these as a standard connector, the skills use that one instead.
 
 **Not bundled, use the standard Claude connectors:** these servers need an OAuth app registered for each host or organization, so a plugin can't ship a working sign-in for them. The Claude connector directory already has them, and the skills show a connect card when they're missing.
-- **GitHub:** used by GitHub summaries. Grant it access to the org's private repos, or the sync only sees public ones.
 - **Google Drive:** used by meeting notes (shared transcript folders) and document sync.
 - **Box:** used by meeting notes (transcript folders).
+
+**GitHub** does not need a connector or OAuth app: the `gh` CLI (`gh auth login`) is sufficient and is the recommended path. A GitHub connector can be used instead if already installed.
 
 **Not available as hosted connectors:**
 - **tl;dv:** there's no hosted server, only a self-hosted one.
