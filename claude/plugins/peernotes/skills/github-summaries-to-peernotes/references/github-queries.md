@@ -42,17 +42,3 @@ Classify by labels first, then conventional-commit prefixes in titles:
 
 Flag as risk: reverts, PRs merged without approving review, very large PRs (>1,000 lines changed), changes to auth/security/migrations paths.
 
-## Using the `gh` CLI instead of the connector
-
-When there are no GitHub tools and `gh auth status` succeeds, run the same queries with read-only `gh` commands. Never run commands that write (`gh pr merge`, `gh pr comment`, `gh issue close`, `gh api -X POST/PATCH/PUT/DELETE`, and similar).
-
-| Need | Command |
-|------|---------|
-| Repos in the org with activity | `gh repo list <org> --limit 200 --json nameWithOwner,pushedAt,isArchived,defaultBranchRef` then keep `pushedAt >= <start>` |
-| Merged PRs | `gh pr list -R <owner>/<repo> --state merged --search "merged:<start>..<end>" --limit 200 --json number,title,author,mergedAt,labels,reviewDecision,body,url,additions,deletions` |
-| Open PRs with activity | `gh pr list -R <owner>/<repo> --state open --search "updated:<start>..<end>" --json number,title,author,updatedAt,reviewDecision,isDraft,url` |
-| Issues closed / opened | `gh issue list -R <owner>/<repo> --state all --search "closed:<start>..<end>"` (and `created:<start>..<end>`) `--json number,title,labels,state,url` |
-| Releases | `gh release list -R <owner>/<repo> --json tagName,name,publishedAt` then `gh release view <tag> -R <owner>/<repo> --json body` |
-| Commits (clone failed) | `gh api "repos/<owner>/<repo>/commits?sha=<branch>&since=<start>T00:00:00Z&until=<end>T23:59:59Z" --paginate` |
-
-`gh` uses the admin's own login, so it also sees private repos the admin can access.

@@ -1,6 +1,6 @@
 ---
 name: github-summaries-to-peernotes
-description: This skill should be used when the user asks to "copy GitHub code summaries to Peernotes", "summarize today's or this week's code changes into Peernotes", "push a repo digest to Peernotes", "save what shipped in a repo to Peernotes", or when a scheduled "Peernotes · GitHub summaries" task runs, including one-time runs and backfills. Produces one digest source per repository per period. Requires Peernotes; GitHub access via the `gh` CLI (`gh auth login`) or a GitHub connector — no OAuth app needed.
+description: This skill should be used when the user asks to "copy GitHub code summaries to Peernotes", "summarize today's or this week's code changes into Peernotes", "push a repo digest to Peernotes", "save what shipped in a repo to Peernotes", or when a scheduled "Peernotes · GitHub summaries" task runs, including one-time runs and backfills. Produces one digest source per repository per period. Requires Peernotes and a GitHub connector.
 ---
 
 # GitHub code summaries → Peernotes
@@ -27,17 +27,13 @@ This plugin is run by one **sync admin** on behalf of the team. Unless the user 
 
 Most source connectors are bundled with this plugin (see `CONNECTORS.md`). Match connectors by service and tool names, not by where they came from: a bundled server and a directory connector for the same service are interchangeable, so use whichever is signed in and never ask the user to sign in twice. If a bundled one's tools are missing or fail with an auth error, it isn't signed in yet: in interactive runs, ask the user to sign in to it from Settings → Connectors and check again. If a directory connector is missing: `ListConnectors` (installed but disconnected → reconnect in Settings → Connectors; connected but not enabled → enable it in this chat), otherwise `SearchMcpRegistry` + `SuggestConnectors` (interactive only). In scheduled runs, report which connector is missing and stop.
 
-**In Claude Code** (no `ListConnectors`, `SearchMcpRegistry` or `SuggestConnectors` tools): ask the user to sign in with `/mcp` instead of Settings → Connectors. All bundled connectors work in Claude Code. If a connector shows as failed, check `CONNECTORS.md` → Claude Code: Google services and Microsoft 365 need a one-time OAuth or Entra setup before `/mcp` sign-in will complete.
+If a connector shows as failed, check `CONNECTORS.md`: Google services work natively in Cowork; Microsoft 365 needs a one-time Entra admin consent — direct the admin to `CONNECTORS.md` → Claude Cowork and check again.
 
 - **Peernotes** (required): `listWorkspaces`, `saveSource`, `getSource`, `getOwnedSources`, `search`.
-- **GitHub** (required — connector or `gh` CLI, no OAuth app needed): check for GitHub in this order:
-  1. A shell is available and `gh auth status` succeeds → use the `gh` CLI (read-only commands in `references/github-queries.md`). This is the primary path in Claude Code and requires no OAuth app.
-  2. GitHub connector tools are present (`list_pull_requests`, `search_pull_requests`, `list_commits`, `list_releases`, `get_pull_request`) → use them.
-  - If neither is available: **stop**. In scheduled runs, report and halt. In interactive runs, help the user set up GitHub access and do not proceed to Step 1 until one path succeeds:
-    - For `gh` CLI: tell the user to run `gh auth login --scopes 'repo'`.
-    - For the GitHub connector: `ListConnectors` → reconnect if installed-but-disconnected; otherwise `SearchMcpRegistry` + `SuggestConnectors` so they can install it from a card. In Claude Code, use `/mcp` instead.
+- **GitHub** (required — GitHub connector): check for GitHub connector tools (`list_pull_requests`, `search_pull_requests`, `list_commits`, `list_releases`, `get_pull_request`).
+  - If not present: **stop**. In scheduled runs, report and halt. In interactive runs, help the user connect GitHub and do not proceed to Step 1 until it succeeds: `ListConnectors` → reconnect if installed-but-disconnected; otherwise `SearchMcpRegistry` + `SuggestConnectors` so they can install it from a card.
 
-**Org visibility check:** if the repo list returns only public repos (or far fewer than expected), the GitHub credentials may not have access to the org's private repos. Say so in the report so the admin can grant access (`gh auth login` with the right scopes, or the connector's org access settings). Cloning uses separate credentials, so a repo can be visible to one and not the other; report each gap separately.
+**Org visibility check:** if the repo list returns only public repos (or far fewer than expected), the GitHub connector may not have access to the org's private repos. Say so in the report so the admin can grant the connector access in GitHub's org settings.
 
 **Local shell:** Step 2a needs a shell with `git` and HTTPS access to github.com. If there is none, skip 2a for every repo and say so in the report.
 

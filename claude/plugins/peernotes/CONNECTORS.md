@@ -28,7 +28,7 @@ Connect team-level access where possible: a notetaker team workspace or Zoom adm
 
 | Category | Options |
 |----------|---------|
-| Source control | `gh` CLI (`gh auth login`, no OAuth app needed) or GitHub connector |
+| Source control | GitHub connector |
 
 ### Document sync (`docs-to-peernotes`), at least one source
 
@@ -37,17 +37,25 @@ Connect team-level access where possible: a notetaker team workspace or Zoom adm
 | Cloud storage | `~~cloud storage` | Google Drive, OneDrive, SharePoint |
 | Wiki | `~~wiki` | Notion |
 
+## Standard connectors (use your existing connection)
+
+These are built-in Claude Cowork connectors. The plugin uses whichever is already connected — no plugin-specific sign-in needed.
+
+| Connector | Used by |
+|-----------|---------|
+| Slack | Meeting notes (huddle canvases, recaps) |
+| Gmail | Meeting notes (recap emails) |
+| Google Calendar | Meeting notes (helper) |
+| Google Drive | Meeting notes (shared transcript folders); Document sync |
+| GitHub | GitHub summaries — install and connect via Settings → Connectors; grant it access to the org's private repos in GitHub's org settings |
+
 ## Bundled connectors
 
-The plugin bundles these servers in `.mcp.json`. Installing the plugin offers each one, and you sign in only to the ones your team's syncs use. Unused ones can stay signed out.
+The plugin bundles these servers in `.mcp.json`. Installing the plugin offers each one; sign in only to the ones your team's syncs use. Unused ones can stay signed out.
 
 | Connector | Endpoint | Used by |
 |-----------|----------|---------|
 | Peernotes | `https://api.peernotes.io/mcp` | All skills (required) |
-| Slack | `https://mcp.slack.com/mcp` | Meeting notes (huddle canvases, recaps) |
-| Gmail | `https://gmailmcp.googleapis.com/mcp/v1` | Meeting notes (recap emails). Needs a Google Cloud OAuth client — see Claude Code below |
-| Google Calendar | `https://calendarmcp.googleapis.com/mcp/v1` | Meeting notes (helper). Same OAuth client as Gmail |
-| Google Drive | `https://drivemcp.googleapis.com/mcp/v1` | Meeting notes (shared transcript folders); Document sync. Same OAuth client |
 | Microsoft 365 | `https://mcp.microsoft365.com/mcp` | Meeting notes (Outlook, Teams); Document sync (OneDrive, SharePoint). Needs a one-time Entra admin consent |
 | Notion | `https://mcp.notion.com/mcp` | Document sync |
 | Zoom | `https://zoom.us/mcp/meeting/streamable` | Meeting notes |
@@ -59,52 +67,24 @@ The plugin bundles these servers in `.mcp.json`. Installing the plugin offers ea
 | Read.ai | `https://api.read.ai/mcp` | Meeting notes (beta) |
 | Granola | `https://mcp.granola.ai/mcp` | Meeting notes |
 
-All use OAuth sign-in. Gong and Microsoft 365 still need an admin to consent or enable. Google services (Gmail, Calendar, Drive) need an OAuth client from your org's Google Cloud project — see the Claude Code section below. If an organization already has one of these as a standard connector, the skills use that one instead.
-
-**GitHub** does not use a connector: the `gh` CLI (`gh auth login --scopes 'repo'`) is sufficient and is the recommended path. A GitHub connector can be used instead if already installed.
-
-**GitHub** does not need a connector or OAuth app: the `gh` CLI (`gh auth login`) is sufficient and is the recommended path. A GitHub connector can be used instead if already installed.
+All use OAuth sign-in via Settings → Connectors. Gong and Microsoft 365 still need an admin to consent or enable.
 
 **Not available as hosted connectors:**
 - **tl;dv:** there's no hosted server, only a self-hosted one.
 - **Google Meet:** use Drive "Meet Recordings", Gmail or Calendar instead.
 
-## Claude Code
+## Claude Cowork
 
-Claude Code (the CLI, IDE extensions and the desktop app's Code tab) loads the same plugin. All bundled connectors work; sign in with `/mcp`. Settings → Connectors and connect cards aren't available, and claude.ai connectors don't carry over.
+Sign in to each connector you need from **Settings → Connectors → Peernotes plugin**. No `/mcp` command or local setup required.
 
-Most connectors sign in with `/mcp` and no extra setup. A few need one-time configuration first:
+Most connectors work immediately after sign-in. A few need one-time configuration first:
 
-**Google services (Gmail, Google Calendar, Google Drive)** — these use Google's own MCP servers and require an OAuth client from your org's Google Cloud project before the `/mcp` sign-in will complete:
+**Google services (Gmail, Google Calendar, Google Drive)** — sign in via Settings → Connectors. No OAuth client or Google Cloud project needed; Cowork handles authentication natively.
 
-```sh
-# Create an OAuth 2.0 client in Google Cloud Console (Desktop app type), then:
-claude mcp add --transport http --client-id <client-id> --client-secret <client-secret> Gmail https://gmailmcp.googleapis.com/mcp/v1
-claude mcp add --transport http --client-id <client-id> --client-secret <client-secret> "Google Calendar" https://calendarmcp.googleapis.com/mcp/v1
-claude mcp add --transport http --client-id <client-id> --client-secret <client-secret> "Google Drive" https://drivemcp.googleapis.com/mcp/v1
-```
+**Microsoft 365 (Outlook, Teams, OneDrive, SharePoint)** — needs a one-time Entra admin consent for the MCP app in your organization's tenant, then sign in via Settings → Connectors as usual.
 
-Then run `/mcp` to complete sign-in. All three can share the same OAuth client if you add the three scopes (`gmail.readonly`, `calendar.readonly`, `drive.readonly`) to it.
-
-**Microsoft 365 (Outlook, Teams, OneDrive, SharePoint)** — needs a one-time Entra admin consent for the MCP app in your organization's tenant, then sign in with `/mcp` as usual.
-
-**GitHub** — no connector or OAuth app needed: the local `gh` CLI is the recommended path:
-
-```sh
-gh auth login --scopes 'repo'
-```
-
-Or use `GITHUB_PERSONAL_ACCESS_TOKEN` if you prefer the connector.
+**GitHub** — install and connect the GitHub connector from Settings → Connectors. Grant it access to the org's private repos in GitHub's org settings.
 
 ## Scheduling
 
-Syncs are scheduled via system cron running `claude -p`. No dependency on any Claude app being open.
-
-```cron
-CRON_TZ=America/Los_Angeles
-52 17 * * 1-5  cd <dir> && claude -p "$(cat peernotes-meeting-notes.txt)"    >> peernotes-meeting-notes.log 2>&1
-52 7  * * *    cd <dir> && claude -p "$(cat peernotes-github-summaries.txt)" >> peernotes-github-summaries.log 2>&1
-52 0  * * *    cd <dir> && claude -p "$(cat peernotes-doc-sync.txt)"         >> peernotes-doc-sync.log 2>&1
-```
-
-`peernotes-team-setup` generates the prompt files and the cron entries. Prerequisites: `/mcp` sign-ins and `gh`/`git` logins must be in place for the user running the job (test with a manual `claude -p` run first).
+Syncs run as cloud scheduled agents (`CronCreate`) — no local machine needed. `peernotes-team-setup` creates the agents and stores the schedule in the team settings note. Manage them later with `CronList` and `CronDelete`.

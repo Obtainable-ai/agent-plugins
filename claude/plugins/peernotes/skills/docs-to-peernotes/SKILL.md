@@ -25,9 +25,9 @@ This plugin is run by one **sync admin** on behalf of the team. Unless the user 
 
 ## Step 0: Check connectors (hard gate)
 
-All source connectors are bundled with this plugin (see `CONNECTORS.md`). Match connectors by service and tool names, not by where they came from: a bundled server and a directory connector for the same service are interchangeable, so use whichever is signed in and never ask the user to sign in twice. If a connector's tools are missing or fail with an auth error, it isn't signed in yet: in interactive runs, ask the user to sign in via Settings → Connectors (or `/mcp` in Claude Code) and check again. If a connector is installed but not enabled in this chat (`ListConnectors` shows `enabledInChat: false`), ask the user to enable it. In scheduled runs, report which connector is missing and stop.
+All source connectors are bundled with this plugin (see `CONNECTORS.md`). Match connectors by service and tool names, not by where they came from: a bundled server and a directory connector for the same service are interchangeable, so use whichever is signed in and never ask the user to sign in twice. If a connector's tools are missing or fail with an auth error, it isn't signed in yet: in interactive runs, ask the user to sign in via Settings → Connectors and check again. If a connector is installed but not enabled in this chat (`ListConnectors` shows `enabledInChat: false`), ask the user to enable it. In scheduled runs, report which connector is missing and stop.
 
-**In Claude Code** (no `ListConnectors`, `SearchMcpRegistry` or `SuggestConnectors` tools): ask the user to sign in with `/mcp` instead of Settings → Connectors. All bundled connectors work in Claude Code. If a connector shows as failed, check `CONNECTORS.md` → Claude Code: Google services (Gmail, Calendar, Drive) and Microsoft 365 need a one-time OAuth or Entra setup before `/mcp` sign-in will complete — ask the user to follow those steps and check again.
+If a connector shows as failed, check `CONNECTORS.md`: Google services work natively in Cowork; Microsoft 365 needs a one-time Entra admin consent — direct the admin to `CONNECTORS.md` → Claude Cowork and check again.
 
 - **Peernotes** (required): `listWorkspaces`, `saveSource`, `getSource`, `getOwnedSources`, `search`.
 - **Document sources (at least one)**:
