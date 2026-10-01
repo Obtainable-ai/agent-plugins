@@ -20,9 +20,24 @@ Replace `<start>`/`<end>` with ISO dates (YYYY-MM-DD).
 
 ## Commits
 
-Take the commit list and file changes from the local clone (`references/local-diff.md`). Use the connector below only when the clone failed for that repo; then take PR size from `pull_request_read` file stats instead of the diff.
+`list_commits` on the default branch with `since=<start>T00:00:00Z` and `until=<end>T23:59:59Z`. Drop commits whose message contains `(#<n>)` or `Merge pull request #<n>` (PR merge/squash commits). Group bot commits (dependabot, renovate) into one line: "N dependency updates".
 
-Fallback: `list_commits` on the default branch with `since=<start>T00:00:00Z` and `until=<end>T23:59:59Z`. Drop commits whose SHA belongs to a merged PR (squash/merge commits reference `(#<n>)` in the message). Group bot commits (dependabot, renovate) into one line: "N dependency updates".
+## File stats and patches
+
+For each merged PR, call `get_pull_request` to retrieve the file list. Each file entry includes `filename`, `additions`, `deletions`, and `patch`. Use these to:
+- Compute per-repo totals (sum additions/deletions across all PR files, excluding lock/generated files).
+- Identify hotspot directories (top 3 by file count across all PR files).
+- Read patch text selectively for content understanding (see Step 2 in SKILL.md for priority order and limits).
+
+## Lock and generated file exclusions
+
+Skip files matching these patterns when computing Stats totals and reading patches (count them separately as "dependency/lockfile updates"):
+
+- `**/*.lock`, `**/package-lock.json`, `**/pnpm-lock.yaml`, `**/yarn.lock`, `**/go.sum`, `**/poetry.lock`, `**/Cargo.lock`
+- `**/*.min.*`, `**/*.map`
+- `**/dist/**`, `**/build/**`, `**/vendor/**`, `**/node_modules/**`
+- `**/*.snap`
+- `**/.env*`, `**/*.pem`, `**/*.key`, `**/*secret*`, `**/*credential*`
 
 ## Releases
 
