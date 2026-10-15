@@ -1,39 +1,44 @@
 # Peernotes
 
-The Peernotes plugin for Claude. Peernotes is a team product: **one person on the team, the sync admin, installs this plugin and keeps the team's Peernotes workspace filled** with meeting notes, GitHub code summaries and documents from the team's tools. Everyone else sees the results in Peernotes, with nothing to install.
+The Peernotes plugin for Claude. Peernotes is a team product: **one person on the team, the sync admin, installs this plugin and keeps the team's Peernotes workspace filled** with meeting notes, GitHub code and Linear issue summaries, interesting Slack threads and documents from the team's tools. Everyone else sees the results in Peernotes, with nothing to install.
 
 ## How it works for a team
 
 1. **The sync admin installs the plugin** and signs in to Peernotes.
-2. **The admin connects the team's sources** with their own access: a notetaker team workspace or Zoom account, Slack channels, the GitHub org, shared drives, and Notion teamspaces.
+2. **The admin connects the team's sources** with their own access: a notetaker team workspace or Zoom account, Slack channels, the GitHub org, Linear, shared drives, and Notion teamspaces.
 3. **The admin says "Set up Peernotes for my team".** The `peernotes-team-setup` skill asks for the team workspace, which syncs to run, team sources, exclusions, and the schedule, prompts the admin to connect any missing source connectors, then creates the scheduled tasks.
 4. **A "Peernotes team sync settings" note** is published in the workspace. It shows everyone what's synced, what's excluded and who the admin is.
 5. **Teammates just use Peernotes.** Anyone can optionally install the plugin to ask Claude questions about Peernotes.
 
-## The three syncs (each optional)
+## The team syncs (each optional)
 
 | Sync | Skill | What lands in the team workspace | Default schedule |
 |------|-------|----------------------------------|------------------|
-| Meeting notes (included in every schedule setup by default) | `transcripts-to-peernotes` | One source (Markdown transcript) per team meeting, from team-wide sources (notetaker team workspace, Zoom account recordings, Slack channels incl. huddle canvases, shared transcript folders) | Weekdays ~6 pm |
+| Meeting notes (included in every schedule setup by default) | `transcripts-to-peernotes` | One meeting source per team meeting (verbatim transcript, with provider, times, attendees and links as metadata), from team-wide sources (notetaker team workspace, Zoom account recordings, Slack channel huddles, shared transcript folders) | Weekdays ~6 pm |
 | GitHub summaries | `github-summaries-to-peernotes` | Daily digest source per repo in the team's org (previous day's activity), plus a team engineering digest | Daily ~8 am |
+| Linear summaries | `linear-summaries-to-peernotes` | Daily summary source per Linear team (done, in progress, new, blocked, decisions, projects), plus a cross-team product digest | Daily ~7:30 am |
+| Slack threads | `slack-threads-to-peernotes` | One thread source per interesting thread (decisions, designs, incidents, customer feedback, how-tos) in the chosen channels, with channel, participants and times as metadata; updated when new replies arrive | Daily ~7 pm |
 | Document sync | `docs-to-peernotes` | One source per new or changed document from shared drives, SharePoint and Notion teamspaces | Daily ~1 am |
 
 Each sync can run **now**, **once** at a chosen date and time (for example a 90-day backfill tonight), or on a **recurring** schedule. The admin can list, change, pause, cancel or hand over syncs at any time.
 
-## Other skill
+## Other skills
 
-`peernotes`: lets anyone on the team search, read, ask questions about, create, edit and comment on Peernotes content through Claude.
+- `peernotes`: lets anyone on the team search, read, ask questions about, create, edit and comment on Peernotes content through Claude.
+- `agent-sessions-to-peernotes`: saves your own Claude Code and Codex sessions as agent session sources (prompts, responses and tool calls, with agent, model, repository and times as metadata; secrets redacted, tool outputs left out). Private by default. Runs in Claude Code on the machine that has the sessions, so it isn't one of the scheduled team syncs.
 
 Try:
 - Admin: "Set up Peernotes for my team."
 - Admin: "Backfill the last 90 days of team meetings into Peernotes tonight."
 - Admin: "Show our Peernotes schedules."
 - Anyone: "What did we decide about pricing? Check Peernotes."
+- Anyone, in Claude Code: "Save my Claude Code sessions from this week to Peernotes."
 
 ## Connectors
 
-- **Standard connectors** (Slack, Gmail, Google Calendar, Google Drive, GitHub): built into Claude Cowork — connect them once in Settings → Connectors and the plugin uses them automatically.
-- **Bundled connectors** (Peernotes, Microsoft 365, Notion, Zoom, Dropbox, Fireflies, Otter, Fathom, Gong, Read.ai, Granola): installed with the plugin. Sign in to Peernotes and to the ones your syncs need via Settings → Connectors; the rest can stay signed out.
+- **Standard connectors** (Slack, Gmail, Google Calendar, Google Drive): built into Claude Cowork — connect them once in Settings → Connectors and the plugin uses them automatically.
+- **Bundled connectors** (Peernotes, GitHub, Linear, Microsoft 365, Notion, Zoom, Dropbox, Fireflies, Otter, Fathom, Gong, Read.ai, Granola): installed with the plugin. Sign in to Peernotes and to the ones your syncs need via Settings → Connectors; the rest can stay signed out.
+- **GitHub summaries** also need the [Claude GitHub MCP connector app](https://github.com/apps/claude-github-mcp-connector) installed on the team's GitHub org, with access to the repos to summarize.
 - See `CONNECTORS.md` for endpoints and setup notes.
 
 ## Safety for team syncs

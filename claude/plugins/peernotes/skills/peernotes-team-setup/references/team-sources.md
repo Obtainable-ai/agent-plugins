@@ -8,7 +8,7 @@ The sync admin's connections determine what can be synced. Prefer sources that c
 |--------|----------|----------------------|
 | AI notetaker team workspace (Fireflies, Otter Teams, Gong, Fathom Team, Read.ai) | All meetings the notetaker joined for the team | Admin or team-wide access in the notetaker, and its connector |
 | Zoom account cloud recordings | All recorded meetings on the Zoom account | Zoom admin role with access to account recordings, and the Zoom connector |
-| Slack channels | Huddle notes canvases and recap posts in the chosen channels | Membership in those channels; list specific channels (public by default) |
+| Slack channels | Huddle transcripts (linked from each huddle's notes canvas) in the chosen channels | Membership in those channels; list specific channels (public by default) |
 | Shared transcripts folder (Drive shared drive, SharePoint) | Anything teammates or tools save there (e.g. Google Meet "Meet Recordings", exported transcripts) | Access to the folder; ask the team to save or auto-route transcripts there |
 | Shared mailbox or label | Recap emails teammates forward or auto-forward | Access to that mailbox/label; set up a forwarding rule convention |
 | Admin's own inbox or calendar | Only meetings the admin attended | Admin's Gmail/Outlook; fine as a supplement, not team coverage |
@@ -19,7 +19,20 @@ Recommend the notetaker team workspace or Zoom account when available; otherwise
 
 - Org-level: all repos in the org with activity in the period (cap 25 per run; list the rest in the report).
 - Or an explicit repo list for the team.
-- The admin's GitHub access limits which private repos are visible; only summarize repos the whole workspace is allowed to know about.
+- Install the [Claude GitHub MCP connector app](https://github.com/apps/claude-github-mcp-connector) on the org (an org owner approves it) and grant it the repos to summarize; without it only public repos and the admin's personal access are visible.
+- Only summarize repos the whole workspace is allowed to know about.
+
+## Linear
+
+- All Linear teams with issue activity in the period, or an explicit list of team keys.
+- Private Linear teams are skipped unless the admin lists them.
+- The admin signs in to the bundled **Linear** connector; summaries cover what the admin's Linear account can see.
+
+## Slack threads
+
+- Specific public channels where the team discusses work (e.g. `#eng`, `#product`, `#incidents`, `#customer-feedback`), never all channels.
+- The admin must be a member of each channel. Private channels only when the admin lists them explicitly.
+- Only threads with real discussion are saved; social channels (`#random`, `#general` announcements) are poor candidates.
 
 ## Documents
 

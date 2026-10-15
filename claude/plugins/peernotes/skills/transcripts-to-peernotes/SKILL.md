@@ -3,9 +3,9 @@ name: transcripts-to-peernotes
 description: This skill should be used when the user asks to "save my meeting transcripts to Peernotes", "copy meeting notes to Peernotes", "import transcripts into Peernotes", "turn my Zoom/Meet/Teams/Otter/Fireflies transcripts into notes", "save my Slack huddle notes to Peernotes", or when a scheduled "Peernotes · Meeting notes" task runs, including one-time runs and backfills. Requires the Peernotes connector plus at least one transcript source (or an uploaded transcript file).
 ---
 
-# Meeting transcripts → Peernotes sources
+# Meeting transcripts → Peernotes meeting sources
 
-Collect meeting transcripts from whichever sources are connected and save each meeting to Peernotes as a source (a Markdown transcript file).
+Collect meeting transcripts from whichever sources are connected and save each meeting to Peernotes as a **meeting source**: the transcript as Markdown content, with provider, times, attendees and links as structured meeting metadata.
 
 Tool names below are base names. Actual names may carry a server prefix (e.g. `mcp__Peernotes__listWorkspaces` or `mcp__plugin_peernotes_Peernotes__listWorkspaces`); match on the base name.
 
@@ -21,7 +21,7 @@ This plugin is run by one **sync admin** on behalf of the team. Unless the user 
 - **Sharing** defaults to shared with the workspace (the prompt or admin may choose private for a trial).
 - Use only **team-level sources** and the scope configured in `peernotes-team-setup` (see its `references/team-sources.md`). In interactive runs without a configuration, ask for team sources rather than defaulting to the admin's personal account, and search the workspace for the `Peernotes team sync settings` note to reuse its scope and exclusions.
 - Apply the **exclusions** from the prompt or settings note; if none are given, use the defaults: DMs, group DMs, private channels, 1:1 meetings, and titles/paths containing `1:1`, `confidential`, `private`, `personal`, `HR`, `interview`, `performance`, `legal`, `compensation`. Count excluded items in the report without naming their titles.
-- Add an attribution line to every source: `Synced for the team by <admin name> from <source>`.
+- Attribution comes from the source's author (the sync admin) and its meeting metadata; do not add an attribution line to the transcript.
 
 ## Step 0: Check connectors (hard gate)
 
@@ -29,7 +29,7 @@ All source connectors are bundled with this plugin (see `CONNECTORS.md`). Match 
 
 If a connector shows as failed, check `CONNECTORS.md`: Google services work natively in Cowork; Microsoft 365 needs a one-time Entra admin consent — direct the admin to `CONNECTORS.md` → Claude Cowork and check again.
 
-**Destination (required):** Peernotes, with at least `listWorkspaces`, `saveSource`, `getSource`, `getOwnedSources` and `search`.
+**Destination (required):** Peernotes, with at least `listWorkspaces`, `saveMeetingSource`, `getSource`, `getOwnedSources`, `getSharedSources` and `search`.
 
 **Sources (at least one required):**
 
@@ -58,51 +58,64 @@ Ask once for anything not stated: sources (default all available), time range (d
 
 For each source, follow `references/sources.md`. If a calendar connector is available, list meetings in the range to get authoritative titles, times and attendees.
 
-Build one record per meeting: title, start time with timezone, attendees, transcript text (plus any vendor summary), source system, source item ID, link back, attachments.
+Build one record per meeting: title, start and end time with timezone, attendees (name, and email when known), verbatim transcript text, meeting platform, source item ID, link back, recording link if any.
 
-**De-duplicate across sources**: records with the same title and start time within ±15 minutes are one meeting. Prefer the fullest transcript (native platform or notetaker > file in storage > Slack huddle canvas > email or chat recap); keep other links as extra references.
+**De-duplicate across sources**: records with the same title and start time within ±15 minutes are one meeting. Prefer the fullest transcript (native platform or notetaker > file in storage > Slack huddle transcript); keep the other links in mind for `url`/`recordingUrl`.
 
-If a source only links to a transcript in a system that isn't connected, record the link and say it couldn't be read.
+**A meeting needs a verbatim transcript.** Summaries, recap emails and AI notes are not transcripts: if no transcript can be read for a meeting, do not save it; count it in the report as "no transcript" (and say which system holds it if a transcript link couldn't be read).
 
 ## Step 3: Skip existing items
 
-Each meeting gets a **Sync ID**: `meeting:<source system>:<source item ID>` (fallback `meeting:<YYYY-MM-DD>:<slugified title>`).
+Each meeting gets an **external ID** — the provider's own identifier, stored in the source's meeting metadata:
 
-**Finding an existing item:** `search` the workspace with `resourceTypes: ["SOURCE"]` for the Sync ID. Confirm with `getSource`: check the `content` field for the `Sync ID:` line (for binary files, check that `name` ends with the Sync ID). If search returns nothing, page through `getOwnedSources` and match on `name`.
+| Provider | External ID |
+|----------|-------------|
+| Slack huddle | `<channel ID>/<huddle message ts>` (e.g. `C0AHLLGLWCF/1792033236.064659`) |
+| Zoom | the meeting UUID (fallback: meeting ID + start time) |
+| Google Meet, Microsoft Teams, notetakers | the platform's meeting/recording/call ID |
+| Anything else (files, emails) | `meeting:<YYYY-MM-DD>:<slugified title>` |
+
+**Finding an existing meeting:** `search` the workspace with `resourceTypes: ["SOURCE"]` and the meeting's name, then `getSource` each candidate whose `sourceType` is `MEETING` and compare `meetingAttributes.externalId`. If search finds nothing, page through `getSharedSources` and `getOwnedSources` for MEETING sources with the same name and check them the same way.
 
 If the meeting already exists, skip it. In interactive mode, offer to update it by passing its ORN as `orn` in Step 4.
 
 ## Step 4: Write to Peernotes
 
-**Sources only, never notes or thoughts.** Save every synced item as a Peernotes **source** with `saveSource`. Never call `saveThought` or `generateNote` for synced items.
+**Meeting sources only, never notes or thoughts.** Save every synced meeting with `saveMeetingSource`. Never call `saveThought` or `generateNote` for synced items.
 
-- Build the content as UTF-8 Markdown with the header block below at the top, and call `saveSource` with `workspaceOrn`, `name` (the title), `content` (raw UTF-8 Markdown string — **do not base64-encode**), `extension: "md"` and `sharedWithWorkspace`.
-- **Update** an existing item by passing its source ORN as `orn`. This replaces the file in place, so never create a second source for the same Sync ID.
-- **Binary originals** (PDF, DOCX, slides, images): these must be base64-encoded. Upload the file itself with its own extension. If it can't be downloaded, save it with `url` instead. Put the Sync ID in the `name` as ` · <sync id>` so it can still be found.
-- **Very long items** (over about 5 MB of Markdown): split into parts named `<title> (Part n of N)`. Each part carries `Sync ID: <sync id>#part<n>`.
+Call `saveMeetingSource` with:
 
-One Markdown source per meeting, `name` = `<Meeting title>, <YYYY-MM-DD>`:
+| Argument | Value |
+|----------|-------|
+| `workspaceOrn` | the chosen workspace |
+| `name` | `<Meeting title>, <YYYY-MM-DD>` |
+| `content` | the transcript as Markdown (format below) — raw text, **not base64** |
+| `provider` | `ZOOM`, `GOOGLE_MEET`, `MICROSOFT_TEAMS`, `SLACK_HUDDLE`, or `OTHER` (notetakers: the platform they recorded on, else `OTHER`; uploaded files: `OTHER`) |
+| `externalId` | the external ID from Step 3 |
+| `url` | link back to the meeting, recording page or notetaker call |
+| `startedAt`, `endedAt` | ISO-8601 with offset, e.g. `2026-10-14T20:00:37-07:00` |
+| `attendees` | `[{displayName, email?, externalId?}]` — the provider's participant list; never invent attendees |
+| `recordingUrl` | link to the audio/video recording, if the provider has one |
+| `sharedWithWorkspace` | per team mode |
+| `orn` | only when updating an existing meeting source (replaces it in place) |
+
+**Content is the transcript only** — no title, date, attendee header, summary, action items or Sync ID line; those live in the metadata. One turn per speaker change:
 
 ```
-# <Meeting title>
-Date: <YYYY-MM-DD HH:MM TZ>
-Attendees: <names>
-Source: <system>: <link or item name>
-Synced for the team by <admin name>
-Other references: <links, if any>
-Sync ID: <sync id>
+**<Speaker name>** [<m:ss offset from start>]: <what they said>
 
-## Transcript
-<transcript, speaker labels preserved>
+**<Speaker name>** [<m:ss>]: <what they said>
 ```
 
-Convert .vtt/.srt to `Speaker: text` lines without timestamps. For a Slack huddle canvas with no transcript, put the canvas content under `## Huddle notes (AI-generated, not a verbatim transcript)`. If the original is a binary transcript file (PDF, DOCX), upload that file as the source instead, named `<Meeting title>, <date> · <sync id>`.
+Omit the `[m:ss]` offset when the source has no timestamps. Convert .vtt/.srt cues to this format, merging consecutive cues from the same speaker. Keep the wording verbatim: do not summarize, clean up or translate. Binary transcripts (PDF, DOCX): extract the text into this format; if the text can't be extracted, record the meeting as failed.
 
-On failure, record it and continue.
+**Very long transcripts** (over about 5 MB): split into parts named `<Meeting title>, <YYYY-MM-DD> (Part n of N)`, each with external ID `<external id>#part<n>`.
+
+On failure, record it and continue — do not re-send the same save blindly; check with Step 3 first, because a failed call may still have created the source.
 
 ## Step 5: Report
 
-Short summary: sources searched, meetings found, sources created, updated, skipped, failed (with reason), workspace used.
+Short summary: sources searched, meetings found, meeting sources created, updated, skipped (already synced / no transcript / excluded), failed (with reason), workspace used.
 
 ## Rules
 

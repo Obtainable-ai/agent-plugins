@@ -4,6 +4,14 @@
       "type": "http",
       "url": "https://api.peernotes.io/mcp"
     },
+    "GitHub": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "Linear": {
+      "type": "http",
+      "url": "https://mcp.linear.app/mcp"
+    },
     "Microsoft 365": {
       "type": "http",
       "url": "https://mcp.microsoft365.com/mcp"
@@ -52,6 +60,7 @@
     "conversation-intelligence",
     "software-coding",
     "documents",
-    "wiki-knowledge-base"
+    "wiki-knowledge-base",
+    "project-management"
   ]
 }

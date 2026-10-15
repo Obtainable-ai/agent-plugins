@@ -46,7 +46,7 @@ Present lists compactly (title, type, updated date, owner/shared). Open full con
 - **Update a whole note with new material**: `generateNote` with the existing `noteOrn` plus new thoughts.
 - **Edit one section**: `getNote` → `rewriteNote` with `selectedText` quoted verbatim from a single paragraph, list item or heading, and a `prompt` describing the change. For multiple sections, call once per section.
 - **Undo**: `getNoteRevisions` → confirm the target revision with the user → `revertNote`.
-- **Files and links**: `saveSource` with base64 `content` + `extension`, or `url`. Use `orn` to replace an existing source.
+- **Sources**: `saveMeetingSource` for a meeting transcript (Markdown transcript as content; provider, times, attendees and links as metadata), `saveThreadSource` for a chat thread, `saveAgentSessionSource` for an AI agent session, `saveDocumentSource` for a file, `saveImageSource` for an image. Pass `orn` to replace an existing source.
 - **Comments**: `addComment` on any thought, note or source; reply with `parentCommentOrn`; anchor to text with `highlightText` (+ positions when known).
 
 Default new content to **private** when a person creates it for themselves. Content created for the team (e.g. the user says "for the team", or it goes into the team sync) is shared with the workspace.
