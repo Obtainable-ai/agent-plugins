@@ -47,8 +47,12 @@ Base tool names (the actual name may carry a server prefix). Required parameters
 |------|------------|-----|
 | `getOwnedSources` | **workspaceOrn**, page, pageSize | Sources the user owns |
 | `getSharedSources` | **workspaceOrn**, page, pageSize | Sources shared with the workspace |
-| `getSource` | **orn** | Content and comments |
-| `saveSource` | **workspaceOrn**, **name**, content (base64) + extension, or url, orn (replace), sharedWithWorkspace | Upload a file or save a link. Images (jpg, jpeg, png, gif, webp, svg) → IMAGE; others → DOCUMENT. Use notes, not sources, for text. |
+| `getSource` | **orn** | Content, comments, and `meetingAttributes` / `threadAttributes` / `agentSessionAttributes` for those types |
+| `saveMeetingSource` | **workspaceOrn**, **name**, **content** (Markdown transcript), provider (ZOOM/GOOGLE_MEET/MICROSOFT_TEAMS/SLACK_HUDDLE/OTHER), externalId, url, startedAt, endedAt (ISO-8601), attendees [{displayName, email, externalId}], recordingUrl, orn (replace), sharedWithWorkspace | A meeting: transcript as content, everything else as metadata |
+| `saveThreadSource` | **workspaceOrn**, **name**, **content** (Markdown messages), provider (SLACK/MICROSOFT_TEAMS/DISCORD/OTHER), externalId, url, teamName, channelId, channelName, participants, linkedFiles, startedAt, endedAt, orn, sharedWithWorkspace | A chat thread |
+| `saveAgentSessionSource` | **workspaceOrn**, **name**, **content** (Markdown prompts/responses), provider (CLAUDE_CODE, CLAUDE_COWORK, CODEX, CURSOR, …, OTHER), externalId, url, model, repository, outputs, startedAt, endedAt, orn, sharedWithWorkspace | An AI agent session |
+| `saveDocumentSource` | **workspaceOrn**, **name**, **content**, **extension**, orn, sharedWithWorkspace | A file (pdf, docx, md, …) |
+| `saveImageSource` | **workspaceOrn**, **name**, **content** (base64), **extension** (jpg, png, …), orn, sharedWithWorkspace | An image |
 
 ## Collaboration
 

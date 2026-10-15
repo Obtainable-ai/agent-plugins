@@ -29,11 +29,11 @@ Most source connectors are bundled with this plugin (see `CONNECTORS.md`). Match
 
 If a connector shows as failed, check `CONNECTORS.md`: Google services work natively in Cowork; Microsoft 365 needs a one-time Entra admin consent — direct the admin to `CONNECTORS.md` → Claude Cowork and check again.
 
-- **Peernotes** (required): `listWorkspaces`, `saveSource`, `getSource`, `getOwnedSources`, `search`.
-- **GitHub** (required — GitHub connector): check for GitHub connector tools (`list_pull_requests`, `search_pull_requests`, `list_commits`, `list_releases`, `get_pull_request`).
-  - If not present: **stop**. In scheduled runs, report and halt. In interactive runs, help the user connect GitHub and do not proceed to Step 1 until it succeeds: `ListConnectors` → reconnect if installed-but-disconnected; otherwise `SearchMcpRegistry` + `SuggestConnectors` so they can install it from a card.
+- **Peernotes** (required): `listWorkspaces`, `saveDocumentSource`, `saveImageSource`, `getSource`, `getOwnedSources`, `search`.
+- **GitHub** (required — bundled with this plugin, `https://api.githubcopilot.com/mcp/`): check for GitHub tools (`list_pull_requests`, `search_pull_requests`, `list_commits`, `list_releases`, `get_pull_request`).
+  - If not present: **stop**. In scheduled runs, report and halt. In interactive runs, ask the user to sign in to **GitHub** from Settings → Connectors → Peernotes plugin (or reconnect an existing GitHub connector) and check again before Step 1.
 
-**Org visibility check:** if the repo list returns only public repos (or far fewer than expected), the GitHub connector may not have access to the org's private repos. Say so in the report so the admin can grant the connector access in GitHub's org settings.
+**Org visibility check:** if the repo list returns only public repos (or far fewer than expected), the [Claude GitHub MCP connector app](https://github.com/apps/claude-github-mcp-connector) is probably not installed on the org, or not granted those repos. Say so in the report and point the admin to that link: an org owner installs (or configures) the app on the team's organization with access to the repos to summarize.
 
 ## Step 1: Confirm scope (interactive only)
 
@@ -72,11 +72,11 @@ If the digest exists, skip it. In interactive mode, offer to refresh it: if the 
 
 ## Step 4: Write to Peernotes
 
-**Sources only, never notes or thoughts.** Save every synced item as a Peernotes **source** with `saveSource`. Never call `saveThought` or `generateNote` for synced items.
+**Sources only, never notes or thoughts.** Save every synced item as a Peernotes **source** with `saveDocumentSource` (images with `saveImageSource`). Never call `saveThought` or `generateNote` for synced items.
 
-- Build the content as UTF-8 Markdown with the header block below at the top, and call `saveSource` with `workspaceOrn`, `name` (the title), `content` (raw UTF-8 Markdown string — **do not base64-encode**), `extension: "md"` and `sharedWithWorkspace`.
+- Build the content as UTF-8 Markdown with the header block below at the top, and call `saveDocumentSource` with `workspaceOrn`, `name` (the title), `content` (raw UTF-8 Markdown string — **do not base64-encode**), `extension: "md"` and `sharedWithWorkspace`.
 - **Update** an existing item by passing its source ORN as `orn`. This replaces the file in place, so never create a second source for the same Sync ID.
-- **Binary originals** (PDF, DOCX, slides, images): these must be base64-encoded. Upload the file itself with its own extension. If it can't be downloaded, save it with `url` instead. Put the Sync ID in the `name` as ` · <sync id>` so it can still be found.
+- **Binary originals** (PDF, DOCX, slides, images): these must be base64-encoded. Upload the file itself with its own extension — `saveImageSource` for images (jpg, jpeg, png, gif, webp, svg, bmp, ico), `saveDocumentSource` for everything else. If it can't be downloaded, record it as failed and include its link in the report: links can't be saved as sources. Put the Sync ID in the `name` as ` · <sync id>` so it can still be found.
 - **Very long items** (over about 5 MB of Markdown): split into parts named `<title> (Part n of N)`. Each part carries `Sync ID: <sync id>#part<n>`.
 
 One Markdown source per repo, `name` = `<repo>: <start> – <end>`. Write the digest yourself from the gathered data, using only that data:

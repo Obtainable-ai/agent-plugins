@@ -30,6 +30,18 @@ Connect team-level access where possible: a notetaker team workspace or Zoom adm
 |----------|---------|
 | Source control | GitHub connector |
 
+### Linear summaries (`linear-summaries-to-peernotes`)
+
+| Category | Options |
+|----------|---------|
+| Project tracker | Linear connector (bundled) |
+
+### Slack threads (`slack-threads-to-peernotes`)
+
+| Category | Options |
+|----------|---------|
+| Chat | Slack connector (standard) |
+
 ### Document sync (`docs-to-peernotes`), at least one source
 
 | Category | Placeholder | Options |
@@ -37,17 +49,20 @@ Connect team-level access where possible: a notetaker team workspace or Zoom adm
 | Cloud storage | `~~cloud storage` | Google Drive, OneDrive, SharePoint |
 | Wiki | `~~wiki` | Notion |
 
+### Agent sessions (`agent-sessions-to-peernotes`)
+
+No source connector: the skill reads Claude Code (`~/.claude/projects`) and Codex (`~/.codex/sessions`) session files directly, so it runs only in Claude Code on the machine that holds them. Only Peernotes is required.
+
 ## Standard connectors (use your existing connection)
 
 These are built-in Claude Cowork connectors. The plugin uses whichever is already connected — no plugin-specific sign-in needed.
 
 | Connector | Used by |
 |-----------|---------|
-| Slack | Meeting notes (huddle canvases, recaps) |
+| Slack | Meeting notes (huddle canvases, recaps); Slack threads |
 | Gmail | Meeting notes (recap emails) |
 | Google Calendar | Meeting notes (helper) |
 | Google Drive | Meeting notes (shared transcript folders); Document sync |
-| GitHub | GitHub summaries — install and connect via Settings → Connectors; grant it access to the org's private repos in GitHub's org settings |
 
 ## Bundled connectors
 
@@ -56,6 +71,8 @@ The plugin bundles these servers in `.mcp.json`. Installing the plugin offers ea
 | Connector | Endpoint | Used by |
 |-----------|----------|---------|
 | Peernotes | `https://api.peernotes.io/mcp` | All skills (required) |
+| GitHub | `https://api.githubcopilot.com/mcp/` | GitHub summaries. The org must also install the [Claude GitHub MCP connector app](https://github.com/apps/claude-github-mcp-connector) |
+| Linear | `https://mcp.linear.app/mcp` | Linear summaries |
 | Microsoft 365 | `https://mcp.microsoft365.com/mcp` | Meeting notes (Outlook, Teams); Document sync (OneDrive, SharePoint). Needs a one-time Entra admin consent |
 | Notion | `https://mcp.notion.com/mcp` | Document sync |
 | Zoom | `https://zoom.us/mcp/meeting/streamable` | Meeting notes |
@@ -67,7 +84,7 @@ The plugin bundles these servers in `.mcp.json`. Installing the plugin offers ea
 | Read.ai | `https://api.read.ai/mcp` | Meeting notes (beta) |
 | Granola | `https://mcp.granola.ai/mcp` | Meeting notes |
 
-All use OAuth sign-in via Settings → Connectors. Gong and Microsoft 365 still need an admin to consent or enable.
+All use OAuth sign-in via Settings → Connectors. Gong and Microsoft 365 still need an admin to consent or enable, and GitHub needs its GitHub App installed on the org.
 
 **Not available as hosted connectors:**
 - **tl;dv:** there's no hosted server, only a self-hosted one.
@@ -83,7 +100,11 @@ Most connectors work immediately after sign-in. A few need one-time configuratio
 
 **Microsoft 365 (Outlook, Teams, OneDrive, SharePoint)** — needs a one-time Entra admin consent for the MCP app in your organization's tenant, then sign in via Settings → Connectors as usual.
 
-**GitHub** — install and connect the GitHub connector from Settings → Connectors. Grant it access to the org's private repos in GitHub's org settings.
+**GitHub** — two steps:
+1. **Install the GitHub App on your org:** open https://github.com/apps/claude-github-mcp-connector, click **Install** (or **Configure** if it's already installed), choose the team's GitHub organization, and grant access to **All repositories** or the repos the team wants summarized. An org owner must approve it; others can request it from the same page.
+2. **Sign in:** connect **GitHub** from Settings → Connectors → Peernotes plugin.
+
+Without the app, the connector only sees public repos and repos your personal account can reach, so the daily summaries miss the org's private repos.
 
 ## Scheduling
 

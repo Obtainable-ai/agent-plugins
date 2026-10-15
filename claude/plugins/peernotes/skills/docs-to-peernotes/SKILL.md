@@ -29,7 +29,7 @@ All source connectors are bundled with this plugin (see `CONNECTORS.md`). Match 
 
 If a connector shows as failed, check `CONNECTORS.md`: Google services work natively in Cowork; Microsoft 365 needs a one-time Entra admin consent — direct the admin to `CONNECTORS.md` → Claude Cowork and check again.
 
-- **Peernotes** (required): `listWorkspaces`, `saveSource`, `getSource`, `getOwnedSources`, `search`.
+- **Peernotes** (required): `listWorkspaces`, `saveDocumentSource`, `saveImageSource`, `getSource`, `getOwnedSources`, `search`.
 - **Document sources (at least one)**:
 
 | Source | Needs tools to |
@@ -64,11 +64,11 @@ Sync ID: `doc:<system>:<file or page ID>`.
 
 ## Step 4: Write to Peernotes
 
-**Sources only, never notes or thoughts.** Save every synced item as a Peernotes **source** with `saveSource`. Never call `saveThought` or `generateNote` for synced items.
+**Sources only, never notes or thoughts.** Save every synced item as a Peernotes **source** with `saveDocumentSource` (images with `saveImageSource`). Never call `saveThought` or `generateNote` for synced items.
 
-- Build the content as UTF-8 Markdown with the header block below at the top, and call `saveSource` with `workspaceOrn`, `name` (the title), `content` (raw UTF-8 Markdown string — **do not base64-encode**), `extension: "md"` and `sharedWithWorkspace`.
+- Build the content as UTF-8 Markdown with the header block below at the top, and call `saveDocumentSource` with `workspaceOrn`, `name` (the title), `content` (raw UTF-8 Markdown string — **do not base64-encode**), `extension: "md"` and `sharedWithWorkspace`.
 - **Update** an existing item by passing its source ORN as `orn`. This replaces the file in place, so never create a second source for the same Sync ID.
-- **Binary originals** (PDF, DOCX, slides, images): these must be base64-encoded. Upload the file itself with its own extension. If it can't be downloaded, save it with `url` instead. Put the Sync ID in the `name` as ` · <sync id>` so it can still be found.
+- **Binary originals** (PDF, DOCX, slides, images): these must be base64-encoded. Upload the file itself with its own extension — `saveImageSource` for images (jpg, jpeg, png, gif, webp, svg, bmp, ico), `saveDocumentSource` for everything else. If it can't be downloaded, record it as failed and include its link in the report: links can't be saved as sources. Put the Sync ID in the `name` as ` · <sync id>` so it can still be found.
 - **Very long items** (over about 5 MB of Markdown): split into parts named `<title> (Part n of N)`. Each part carries `Sync ID: <sync id>#part<n>`.
 
 **Text documents** (Google Docs, Word, Markdown, plain text, Notion pages; export Docs as text/markdown): one Markdown source, `name` = document title, with the content reproduced faithfully and not summarized:
@@ -86,7 +86,7 @@ Sync ID: <sync id>
 <document content as markdown>
 ```
 
-**Binary / non-text files** (PDF, images, slides, spreadsheets, other): upload the file itself with its own `extension`, named `<title> · <sync id>`. For spreadsheets and slides, export to PDF or XLSX first if the connector allows. If the content can't be downloaded, save it with `url` instead.
+**Binary / non-text files** (PDF, images, slides, spreadsheets, other): upload the file itself with its own `extension`, named `<title> · <sync id>`. For spreadsheets and slides, export to PDF or XLSX first if the connector allows. If the content can't be downloaded, record it as failed and include its link in the report.
 
 On failure, record it and continue.
 
