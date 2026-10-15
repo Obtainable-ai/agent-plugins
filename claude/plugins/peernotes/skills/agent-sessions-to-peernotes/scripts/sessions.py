@@ -184,12 +184,19 @@ def summary(meta, turns):
     }
 
 
+def fenced(text, lang=""):
+    # Plain Markdown only (Peernotes doesn't render raw HTML); fence longer than any backtick run inside.
+    ticks = max([3] + [len(run) + 1 for run in re.findall(r"`{3,}", text)])
+    return f"{'`' * ticks}{lang}\n{text}\n{'`' * ticks}"
+
+
 def to_markdown(turns):
     out = []
     for role, body in turns:
         if role == "Tool":
             name, args = body
-            out.append(f"<details><summary>Tool: {name}</summary>\n\n```\n{args}\n```\n\n</details>")
+            lang = "json" if args.lstrip().startswith(("{", "[")) else ""
+            out.append(f"**Tool: {name}**\n\n{fenced(args, lang)}")
         else:
             out.append(f"### {role}\n\n{body}")
     return "\n\n".join(out) + "\n"

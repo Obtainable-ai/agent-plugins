@@ -67,7 +67,7 @@ The `externalId` (`claude-code:<session id>` or `codex:<session id>`) identifies
 python3 <skill dir>/scripts/sessions.py render <path> --out <tmp>/<id>.md --meta <tmp>/<id>.json
 ```
 
-The script writes the session as Markdown — `### Prompt` and `### Response` sections, each tool call as a collapsible `<details>` block with its input — and leaves out tool outputs and model reasoning. It replaces obvious secrets (API keys, tokens, private keys, passwords) with `[REDACTED]`. Read the `.md` file and the metadata `.json`, then call `saveAgentSessionSource`:
+The script writes the session as Markdown — `### Prompt` and `### Response` sections, each tool call as a `**Tool: <name>**` line with its input in a code block (plain Markdown, no HTML, so it renders in Peernotes) — and leaves out tool outputs and model reasoning. It replaces obvious secrets (API keys, tokens, private keys, passwords) with `[REDACTED]`. Read the `.md` file and the metadata `.json`, then call `saveAgentSessionSource`:
 
 | Argument | Value |
 |----------|-------|
