@@ -100,10 +100,9 @@ Scheduled personal run. Use the peernotes plugin's agent-sessions-to-peernotes s
 Owner: <name, email> — sync only this user's own sessions on this machine.
 Peernotes workspace: <workspace name> (<workspace ORN>)
 Sharing: <private (default) | shared with workspace>
-Agents: <Claude Code and Codex | Claude Code | Codex>
-Repositories: <all | github.com/org/repo, …>
+Directories: <all | core-platform, …>
 Lookback: sessions active in the last <2> days
 Exclusions: sessions whose folder or title contains confidential, private, personal, HR, interview, performance, legal, compensation, secret, credentials<, plus the user's own exclusions>
 
-Save each new session as an agent session source and update sessions that continued since they were saved (by external ID). Session files are read-only. Finish with a short report of created, updated, skipped, excluded and failed sessions. If Peernotes is unavailable or the session files can't be read on this machine, report it and stop.
+Save each new session as an agent session source and update sessions that continued since they were saved (by external ID). Session files are read-only. Finish with a short report of created, updated, skipped, excluded and failed sessions. If the Peernotes CLI can't be installed, isn't signed in, or the session files can't be read on this machine, report it and stop.
 ```

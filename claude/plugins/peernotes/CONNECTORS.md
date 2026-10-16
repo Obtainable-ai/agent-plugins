@@ -51,7 +51,7 @@ Connect team-level access where possible: a notetaker team workspace or Zoom adm
 
 ### Agent sessions (`agent-sessions-to-peernotes`)
 
-No source connector: the skill reads Claude Code (`~/.claude/projects`) and Codex (`~/.codex/sessions`) session files directly, so it runs only in Claude Code on the machine that holds them. Only Peernotes is required.
+No connector: the skill downloads the Peernotes CLI, which reads Claude Code session files (`~/.claude/projects`) and uploads them with its own Peernotes sign-in, so it runs only in Claude Code on the machine that holds them.
 
 ## Standard connectors (use your existing connection)
 
