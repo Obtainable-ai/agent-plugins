@@ -19,7 +19,7 @@ Syncs run as cloud scheduled agents (`CronCreate`) in Claude Cowork — no local
 | Slack threads | `slack-threads-to-peernotes` | Daily ~7 pm | 2 days |
 | Document sync | `docs-to-peernotes` | Daily ~1 am | 2 days |
 
-**Agent sessions (personal, optional, daily).** The person running setup can also schedule a daily sync of **their own** Claude Code and Codex sessions (`agent-sessions-to-peernotes`), default daily ~11 pm, lookback 2 days, **private**. Session files live on that person's machine, so this job is scheduled **locally** (Step 3), never with `CronCreate`, and it is not part of the team settings note.
+**Agent sessions (personal, optional, daily).** The person running setup can also schedule a daily sync of **their own** Claude Code sessions (`agent-sessions-to-peernotes`), default daily ~11 pm, lookback 2 days, **private**. Session files live on that person's machine, so this job is scheduled **locally** (Step 3), never with `CronCreate`, and it is not part of the team settings note.
 
 **Meeting notes is part of every scheduled setup by default.** Include it alongside any other syncs the admin chose, even if they only named GitHub or documents. Leave it out only when the admin explicitly says they don't want meeting notes. GitHub summaries, Linear summaries, Slack threads and Document sync stay optional.
 
@@ -103,7 +103,7 @@ CronCreate(name="Peernotes · Document sync",    schedule="52 0  * * *",   timez
 Syncs turned off → delete with `CronDelete` using the agent's ID from `CronList`.
 
 **Agent sessions (daily, local).** Cloud agents can't read the session files, so schedule this job on the machine that has them, with the **Agent sessions** template from `references/prompt-templates.md`:
-- **Claude desktop app** (Code tab, `create_scheduled_task` available): `create_scheduled_task(taskId="peernotes-agent-sessions", title="Peernotes · Agent sessions", description="Daily: save my Claude Code and Codex sessions to Peernotes", cronExpression="52 22 * * *", prompt=<filled agent sessions template>)`. The expression is in local time, so no timezone argument. Tell the user it runs while the app is open, and catches up on the next launch if the app was closed.
+- **Claude desktop app** (Code tab, `create_scheduled_task` available): `create_scheduled_task(taskId="peernotes-agent-sessions", title="Peernotes · Agent sessions", description="Daily: save my Claude Code sessions to Peernotes", cronExpression="52 22 * * *", prompt=<filled agent sessions template>)`. The expression is in local time, so no timezone argument. Tell the user it runs while the app is open, and catches up on the next launch if the app was closed.
 - **Claude Code CLI only**: write the filled template to `~/.peernotes/agent-sessions-prompt.txt`, then give the user this crontab line to add with `crontab -e` (don't edit their crontab yourself): `52 22 * * * cd ~ && claude -p "$(cat ~/.peernotes/agent-sessions-prompt.txt)" >> ~/.peernotes/agent-sessions.log 2>&1`. The machine must be awake at that time.
 - In Cowork (no local files and no `create_scheduled_task` on the user's machine), explain that the job needs the Claude desktop app or Claude Code on the machine with the sessions, and skip it.
 

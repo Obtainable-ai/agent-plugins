@@ -25,7 +25,7 @@ Each sync can run **now**, **once** at a chosen date and time (for example a 90-
 ## Other skills
 
 - `peernotes`: lets anyone on the team search, read, ask questions about, create, edit and comment on Peernotes content through Claude.
-- `agent-sessions-to-peernotes`: saves your own Claude Code and Codex sessions as agent session sources (prompts, responses and tool calls, with agent, model, repository and times as metadata; secrets redacted, tool outputs left out). Private by default. Runs in Claude Code on the machine that has the sessions, so it isn't one of the scheduled team syncs.
+- `agent-sessions-to-peernotes`: saves your own Claude Code sessions as agent session sources (prompts, responses and tool calls, with agent, model, directory and times as metadata; secrets redacted, tool outputs left out) using the Peernotes CLI, which the skill downloads. Private by default. Runs in Claude Code on the machine that has the sessions, so it isn't one of the scheduled team syncs.
 
 Try:
 - Admin: "Set up Peernotes for my team."
