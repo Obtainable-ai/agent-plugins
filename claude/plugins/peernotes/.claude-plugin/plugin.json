@@ -1,11 +1,13 @@
 {
   "name": "peernotes",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "description": "The Peernotes plugin for teams: one sync admin keeps the team's Peernotes workspace filled with meeting notes, daily GitHub code and Linear issue summaries, interesting Slack threads and documents from shared drives or Notion, on optional recurring or one-time schedules. Anyone can also use it to search, read and manage Peernotes content, and save their own Claude Code sessions to Peernotes.",
   "author": {
     "name": "Obtainable",
     "email": "ayan@obtainable.ai"
   },
+  "homepage": "https://peernotes.io",
+  "privacyPolicyUrl": "https://get.peernotes.io/privacy",
   "license": "MIT",
   "keywords": [
     "admin",

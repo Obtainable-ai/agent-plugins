@@ -104,5 +104,5 @@ Directories: <all | core-platform, …>
 Lookback: sessions active in the last <2> days
 Exclusions: sessions whose folder or title contains confidential, private, personal, HR, interview, performance, legal, compensation, secret, credentials<, plus the user's own exclusions>
 
-Save each new session as an agent session source and update sessions that continued since they were saved (by external ID). Session files are read-only. Finish with a short report of created, updated, skipped, excluded and failed sessions. If the Peernotes CLI can't be installed, isn't signed in, or the session files can't be read on this machine, report it and stop.
+Save each new session as an agent session source and update sessions that continued since they were saved (by external ID). Session files are read-only. Finish with a short report of created, updated, skipped, excluded and failed sessions. If the Peernotes CLI (`peernotes`, version 1.0.0 or later) isn't installed, isn't signed in, or the session files can't be read on this machine, report it and stop.
 ```

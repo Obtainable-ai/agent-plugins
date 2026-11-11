@@ -52,15 +52,5 @@
       "type": "http",
       "url": "https://mcp.granola.ai/mcp"
     }
-  },
-  "recommendedCategories": [
-    "email",
-    "chat",
-    "calendar",
-    "conversation-intelligence",
-    "software-coding",
-    "documents",
-    "wiki-knowledge-base",
-    "project-management"
-  ]
+  }
 }
