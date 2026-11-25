@@ -6,7 +6,7 @@ Plugins for Obtainable's products, for coding and work agents. Claude and Codex 
 
 | Plugin | Agent | Product | Description |
 |--------|-------|---------|-------------|
-| [`peernotes`](./claude/plugins/peernotes) | Claude Code, Cowork | [Peernotes](https://peernotes.io) | Keeps a team's Peernotes workspace filled with meeting notes, daily GitHub code summaries and documents, and lets you search and manage Peernotes content from Claude. |
+| [`peernotes`](./claude/plugins/peernotes) | Claude Code, Cowork | [Peernotes](https://get.peernotes.io) | Keeps a team's Peernotes workspace filled with meeting notes, daily GitHub code summaries and documents, and lets you search and manage Peernotes content from Claude. |
 
 Codex plugins: none yet. See [codex/README.md](./codex/README.md).
 

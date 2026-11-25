@@ -27,29 +27,16 @@ Claude Code keeps sessions in `~/.claude/projects/*/*.jsonl` on the user's own m
 - Only sync the user's own sessions on this machine.
 - **Exclusions** are applied by the CLI: sessions whose working directory or title contains `confidential`, `private`, `personal`, `HR`, `interview`, `performance`, `legal`, `compensation`, `secret`, `credentials`, and sessions with no prompts. Pass `--no-exclude` only if the user explicitly turns the exclusions off. The report counts excluded sessions without naming them.
 
-## Step 0: Install the CLI
+## Step 0: Check the CLI
 
 ```bash
-case "$(uname -s)-$(uname -m)" in
-  Darwin-arm64)  PLATFORM=macos-arm64 ;;
-  Darwin-x86_64) PLATFORM=macos-x64 ;;
-  Linux-x86_64)  PLATFORM=linux-x64 ;;
-  *) echo "unsupported platform: $(uname -s)-$(uname -m)"; exit 1 ;;
-esac
-PEERNOTES_VERSION=0.1.0
-PEERNOTES="$HOME/.peernotes/cli/bin/peernotes-$PEERNOTES_VERSION"
-if [ ! -x "$PEERNOTES" ]; then
-  mkdir -p "$(dirname "$PEERNOTES")"
-  curl -fsSL -o "$PEERNOTES" \
-    "https://f005.backblazeb2.com/file/obtainable-releases/peernotes/cli/peernotes_${PEERNOTES_VERSION}_$PLATFORM"
-  chmod +x "$PEERNOTES"
-  # The macOS build is unsigned and Apple Silicon refuses to run unsigned code: sign it ad hoc.
-  [ "$(uname -s)" = Darwin ] && codesign --sign - --force "$PEERNOTES"
-fi
-"$PEERNOTES" version
+PEERNOTES="$(command -v peernotes || echo /usr/local/bin/peernotes)"
+[ -x "$PEERNOTES" ] && "$PEERNOTES" version || echo "peernotes CLI not installed"
 ```
 
-The skill pins CLI version `0.1.0` and downloads it only once. Use `$PEERNOTES` (`~/.peernotes/cli/bin/peernotes-0.1.0`) for every command below. If the download fails or the platform is unsupported, report it and stop.
+The skill needs CLI version `1.0.0` or later, installed as `peernotes` on the `PATH` (the download page puts it in `/usr/local/bin`); use `$PEERNOTES` for every command below. Never download or install the CLI yourself. If it isn't installed, or `version` reports a `0.x` version:
+- **Interactive**: tell the user to install or update it from https://get.peernotes.io/download (see "Installing the Peernotes CLI" in the plugin's README; macOS and Linux x64), then run this step again.
+- **Scheduled**: report that the CLI is missing or out of date and stop.
 
 ## Step 1: Sign in
 
@@ -59,7 +46,7 @@ The skill pins CLI version `0.1.0` and downloads it only once. Use `$PEERNOTES` 
 
 If it reports `logged_out`:
 - **Interactive**: run `"$PEERNOTES" auth login`. It opens the browser for the user to sign in to Peernotes; wait for it to finish.
-- **Scheduled**: don't log in. Report that the user needs to run `~/.peernotes/cli/bin/peernotes-0.1.0 auth login` once, and stop.
+- **Scheduled**: don't log in. Report that the user needs to run `peernotes auth login` once, and stop.
 
 Any later command that exits with code **3** means the session expired: handle it the same way.
 

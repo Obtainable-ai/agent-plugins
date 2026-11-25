@@ -2,6 +2,14 @@
 
 The Peernotes plugin for Claude. Peernotes is a team product: **one person on the team, the sync admin, installs this plugin and keeps the team's Peernotes workspace filled** with meeting notes, GitHub code and Linear issue summaries, interesting Slack threads and documents from the team's tools. Everyone else sees the results in Peernotes, with nothing to install.
 
+## Install
+
+In Claude Code:
+
+```
+/plugin install peernotes --marketplace Obtainable-ai/agent-plugins
+```
+
 ## How it works for a team
 
 1. **The sync admin installs the plugin** and signs in to Peernotes.
@@ -25,7 +33,7 @@ Each sync can run **now**, **once** at a chosen date and time (for example a 90-
 ## Other skills
 
 - `peernotes`: lets anyone on the team search, read, ask questions about, create, edit and comment on Peernotes content through Claude.
-- `agent-sessions-to-peernotes`: saves your own Claude Code sessions as agent session sources (prompts, responses and tool calls, with agent, model, directory and times as metadata; secrets redacted, tool outputs left out) using the Peernotes CLI, which the skill downloads. Private by default. Runs in Claude Code on the machine that has the sessions, so it isn't one of the scheduled team syncs.
+- `agent-sessions-to-peernotes`: saves your own Claude Code sessions as agent session sources (prompts, responses and tool calls, with agent, model, directory and times as metadata; secrets redacted, tool outputs left out) using the Peernotes CLI, which you install once (see below). Private by default. Runs in Claude Code on the machine that has the sessions, so it isn't one of the scheduled team syncs.
 
 Try:
 - Admin: "Set up Peernotes for my team."
@@ -33,6 +41,12 @@ Try:
 - Admin: "Show our Peernotes schedules."
 - Anyone: "What did we decide about pricing? Check Peernotes."
 - Anyone, in Claude Code: "Save my Claude Code sessions from this week to Peernotes."
+
+## Installing the Peernotes CLI
+
+`agent-sessions-to-peernotes` needs the Peernotes CLI version 1.0.0 or later, installed as `peernotes` in `/usr/local/bin` (or elsewhere on your `PATH`). Follow the steps at [get.peernotes.io/download](https://get.peernotes.io/download) for macOS (Apple silicon or Intel) or Linux x86-64: download the binary, make it executable (`chmod +x`), on macOS sign it ad hoc (`codesign --sign - --force peernotes`, since the build is unsigned), and move it to `/usr/local/bin/`. Check it with `peernotes version`, then sign in with `peernotes auth login`.
+
+If you installed 0.1.0 at `~/.peernotes/cli/bin/peernotes-0.1.0` with an earlier plugin version, you can delete it after installing 1.0.0.
 
 ## Connectors
 
